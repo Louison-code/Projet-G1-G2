@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="UTF-8"?><project name="Untitled Gantt Project" company="" webLink="http://" view-date="2026-01-01" view-index="2" gantt-divider-location="377" resource-divider-location="300" version="3.3.3322" locale="fr_FR">
+    <description/>
+    <view zooming-state="default:8" id="gantt-chart">
+        <field id="tpd3" name="Nom" width="180" order="0"/>
+        <field id="tpd4" name="Date de début" width="60" order="1"/>
+        <field id="tpd5" name="Date de fin" width="60" order="2"/>
+        <field id="tpd10" name="ID" width="26" order="3"/>
+        <field id="tpc0" name="Ajouter une colonne personnalisée" width="35" order="4"/>
+        <field id="tpd15" name="Notes" width="20" order="4"/>
+        <option id="filter.completedTasks" value="false"/>
+        <option id="filter.dueTodayTasks" value="false"/>
+        <option id="filter.overdueTasks" value="false"/>
+        <option id="filter.inProgressTodayTasks" value="false"/>
+        <option id="color.recent"><![CDATA[#33ff66 #1e90ff #ff0000 #ffcccc #ffffff #ffcc33 #00ccff]]></option>
+    </view>
+    <view id="resource-table">
+        <field id="0" name="Nom" width="198" order="0"/>
+        <field id="1" name="Rôle par défaut" width="81" order="1"/>
+    </view>
+    <!-- -->
+    <calendars base-id="Aucun">
+        <day-types>
+            <day-type id="0"/>
+            <day-type id="1"/>
+            <default-week id="1" name="default" sun="1" mon="0" tue="0" wed="0" thu="0" fri="0" sat="1"/>
+            <only-show-weekends value="false"/>
+            <overriden-day-types/>
+            <days/>
+        </day-types>
+        <date year="2026" month="6" date="26" type="HOLIDAY"/>
+        <date year="2026" month="6" date="27" type="HOLIDAY"/>
+        <date year="2026" month="6" date="28" type="HOLIDAY"/>
+        <date year="2026" month="6" date="29" type="HOLIDAY"/>
+        <date year="2026" month="6" date="30" type="HOLIDAY"/>
+        <date year="2026" month="7" date="1" type="HOLIDAY"/>
+        <date year="2026" month="7" date="2" type="HOLIDAY"/>
+        <date year="2026" month="7" date="3" type="HOLIDAY"/>
+        <date year="2026" month="7" date="4" type="HOLIDAY"/>
+        <date year="2026" month="7" date="5" type="HOLIDAY"/>
+        <date year="2026" month="7" date="6" type="HOLIDAY"/>
+        <date year="2026" month="7" date="7" type="HOLIDAY"/>
+        <date year="2026" month="7" date="8" type="HOLIDAY"/>
+        <date year="2026" month="7" date="9" type="HOLIDAY"/>
+        <date year="2026" month="7" date="10" type="HOLIDAY"/>
+        <date year="2026" month="7" date="11" type="HOLIDAY"/>
+        <date year="2026" month="7" date="12" type="HOLIDAY"/>
+        <date year="2026" month="7" date="13" type="HOLIDAY"/>
+        <date year="2026" month="7" date="14" type="HOLIDAY"/>
+        <date year="2026" month="7" date="15" type="HOLIDAY"/>
+        <date year="2026" month="7" date="16" type="HOLIDAY"/>
+        <date year="2026" month="7" date="17" type="HOLIDAY"/>
+        <date year="2026" month="7" date="18" type="HOLIDAY"/>
+        <date year="2026" month="7" date="19" type="HOLIDAY"/>
+        <date year="2026" month="7" date="20" type="HOLIDAY"/>
+        <date year="2026" month="7" date="21" type="HOLIDAY"/>
+        <date year="2026" month="7" date="22" type="HOLIDAY"/>
+        <date year="2026" month="7" date="23" type="HOLIDAY"/>
+        <date year="2026" month="7" date="24" type="HOLIDAY"/>
+        <date year="2026" month="7" date="25" type="HOLIDAY"/>
+        <date year="2026" month="7" date="26" type="HOLIDAY"/>
+        <date year="2026" month="7" date="27" type="HOLIDAY"/>
+        <date year="2026" month="7" date="28" type="HOLIDAY"/>
+        <date year="2026" month="7" date="29" type="HOLIDAY"/>
+        <date year="2026" month="7" date="30" type="HOLIDAY"/>
+        <date year="2026" month="7" date="31" type="HOLIDAY"/>
+        <date year="2026" month="8" date="1" type="HOLIDAY"/>
+        <date year="2026" month="8" date="2" type="HOLIDAY"/>
+        <date year="2026" month="8" date="3" type="HOLIDAY"/>
+        <date year="2026" month="8" date="4" type="HOLIDAY"/>
+        <date year="2026" month="8" date="5" type="HOLIDAY"/>
+        <date year="2026" month="8" date="6" type="HOLIDAY"/>
+        <date year="2026" month="8" date="7" type="HOLIDAY"/>
+        <date year="2026" month="8" date="8" type="HOLIDAY"/>
+        <date year="2026" month="8" date="9" type="HOLIDAY"/>
+        <date year="2026" month="8" date="10" type="HOLIDAY"/>
+        <date year="2026" month="8" date="11" type="HOLIDAY"/>
+        <date year="2026" month="8" date="12" type="HOLIDAY"/>
+        <date year="2026" month="8" date="13" type="HOLIDAY"/>
+        <date year="2026" month="8" date="14" type="HOLIDAY"/>
+        <date year="2026" month="8" date="15" type="HOLIDAY"/>
+        <date year="2026" month="8" date="16" type="HOLIDAY"/>
+        <date year="2026" month="8" date="17" type="HOLIDAY"/>
+        <date year="2026" month="8" date="18" type="HOLIDAY"/>
+        <date year="2026" month="8" date="19" type="HOLIDAY"/>
+        <date year="2026" month="8" date="20" type="HOLIDAY"/>
+        <date year="2026" month="8" date="21" type="HOLIDAY"/>
+        <date year="2026" month="8" date="22" type="HOLIDAY"/>
+        <date year="2026" month="8" date="23" type="HOLIDAY"/>
+        <date year="2026" month="8" date="24" type="HOLIDAY"/>
+        <date year="2026" month="8" date="25" type="HOLIDAY"/>
+        <date year="2026" month="8" date="26" type="HOLIDAY"/>
+        <date year="2026" month="8" date="27" type="HOLIDAY"/>
+        <date year="2026" month="8" date="28" type="HOLIDAY"/>
+        <date year="2026" month="8" date="29" type="HOLIDAY"/>
+        <date year="2026" month="8" date="30" type="HOLIDAY"/>
+        <date year="2026" month="8" date="31" type="HOLIDAY"/>
+        <date year="2026" month="12" date="21" type="HOLIDAY"/>
+        <date year="2026" month="12" date="22" type="HOLIDAY"/>
+        <date year="2026" month="12" date="23" type="HOLIDAY"/>
+        <date year="2026" month="12" date="24" type="HOLIDAY"/>
+        <date year="2026" month="12" date="25" type="HOLIDAY"/>
+        <date year="2026" month="12" date="26" type="HOLIDAY"/>
+        <date year="2026" month="12" date="27" type="HOLIDAY"/>
+        <date year="2026" month="12" date="28" type="HOLIDAY"/>
+        <date year="2026" month="12" date="29" type="HOLIDAY"/>
+        <date year="2026" month="12" date="30" type="HOLIDAY"/>
+        <date year="2026" month="12" date="31" type="HOLIDAY"/>
+        <date year="2027" month="1" date="1" type="HOLIDAY"/>
+    </calendars>
+    <tasks empty-milestones="true">
+        <taskproperties>
+            <taskproperty id="tpd0" name="type" type="default" valuetype="icon"/>
+            <taskproperty id="tpd1" name="priority" type="default" valuetype="icon"/>
+            <taskproperty id="tpd2" name="info" type="default" valuetype="icon"/>
+            <taskproperty id="tpd3" name="name" type="default" valuetype="text"/>
+            <taskproperty id="tpd4" name="begindate" type="default" valuetype="date"/>
+            <taskproperty id="tpd5" name="enddate" type="default" valuetype="date"/>
+            <taskproperty id="tpd6" name="duration" type="default" valuetype="int"/>
+            <taskproperty id="tpd7" name="completion" type="default" valuetype="int"/>
+            <taskproperty id="tpd8" name="coordinator" type="default" valuetype="text"/>
+            <taskproperty id="tpd9" name="predecessorsr" type="default" valuetype="text"/>
+            <taskproperty id="tpc0" name="Ajouter une colonne personnalisée" type="custom" valuetype="text" defaultvalue=""/>
+        </taskproperties>
+        <task id="802" uid="52ba6118403742d9bb3bd1b0a732e7d6" name="T0.1.1: Étude de la jurisprudence du Web Scraping" color="#ffffff" meeting="false" start="2026-03-20" duration="3" complete="0" expand="true">
+            <depend id="805" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="803" uid="adca234dcb724f4789eeba6ae222e3ea" name="T0.1.2 : Analyse des robots.txt cibles" color="#ffffff" meeting="false" start="2026-03-20" duration="3" complete="0" expand="true">
+            <depend id="805" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="804" uid="e639566f10ec4a57aa2485ce3ad8d00a" name="T0.1.3: Création de la &quot;Liste Blanche&quot; et &quot;Liste Noire&quot;" color="#ffffff" meeting="false" start="2026-03-20" duration="3" complete="0" expand="true">
+            <depend id="805" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="805" uid="8c19b4e3b12c421d8647882ba8ab1430" name="T0.1.4 : Rédaction de la charte éthique du projet" color="#ffffff" meeting="false" start="2026-03-25" duration="2" complete="0" expand="true">
+            <depend id="2" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="806" uid="0116eb1d8520480b92233ae5cca8c10d" name="T1.1.1: Audit des capacités machine" meeting="false" start="2026-03-20" duration="2" complete="0" expand="true">
+            <depend id="2" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="807" uid="29239442899a47a4ad76b1290a6307dd" name="T1.1.2 : Architecture de Versioning (GitHub)" meeting="false" start="2026-03-20" duration="2" complete="0" expand="true">
+            <depend id="2" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="808" uid="d45b14acefc6460c8bf98ca5c18bc464" name="T1.1.3: Benchmark des bibliothèques de Scraping" meeting="false" start="2026-03-20" duration="3" complete="0" expand="true">
+            <depend id="2" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="2" uid="aa000003" name="T1.1.4: Déploiement de la base SQL locale" meeting="false" start="2026-03-27" duration="3" complete="0" expand="true">
+            <depend id="3" type="2" difference="0" hardness="Strong"/>
+            <depend id="9" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="3" uid="aa000004" name="T2.0.1: Formation IA" color="#ffcccc" meeting="false" start="2026-04-01" duration="7" complete="0" expand="true">
+            <depend id="4" type="2" difference="0" hardness="Strong"/>
+            <depend id="5" type="2" difference="0" hardness="Strong"/>
+            <depend id="819" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="4" uid="aa000005" name="T2.1.1: Veille et présélection des modèles LLM locaux" color="#ffcccc" meeting="false" start="2026-04-10" duration="6" complete="0" priority="2" expand="true">
+            <depend id="809" type="2" difference="0" hardness="Strong"/>
+            <depend id="811" type="2" difference="0" hardness="Strong"/>
+            <depend id="813" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="809" uid="687aee0beb574260aa3c587dd29fbc96" name="T2.1.2 Test de compatibilité matérielle" color="#ffcccc" meeting="false" start="2026-04-20" duration="3" complete="0" expand="true">
+            <depend id="810" type="2" difference="0" hardness="Strong"/>
+            <depend id="811" type="2" difference="0" hardness="Strong"/>
+            <depend id="813" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="810" uid="e98ea95f64ac4f9e9aa9239bfb596b71" name="T2.1.3 : Benchmark de performance" color="#ffcccc" meeting="false" start="2026-04-23" duration="3" complete="0" expand="true">
+            <depend id="811" type="2" difference="0" hardness="Strong"/>
+            <depend id="813" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="811" uid="b761aed3606e43aea7243402e5e06c4f" name="T2.1.4: Évaluation de la pertinence &quot;Zero-Shot&quot;" color="#ffcccc" meeting="false" start="2026-04-28" duration="3" complete="0" expand="true">
+            <depend id="812" type="2" difference="0" hardness="Strong"/>
+            <depend id="813" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="812" uid="1f3497c6d8054a4e934402f8b7134619" name="T2.1.5 : Analyse du compromis Précision/Poids" color="#ffcccc" meeting="false" start="2026-05-01" duration="3" complete="0" expand="true">
+            <depend id="813" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="813" uid="9fcc011c51cc48768a5636bd9774b133" name="T2.1.6 Rédaction de la note de choix technique" color="#ffcccc" meeting="false" start="2026-05-06" duration="3" complete="0" expand="true">
+            <depend id="819" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="5" uid="aa000006" name="T2.2.1 : Inventaire exhaustif des champs" color="#ffcccc" meeting="false" start="2026-04-10" duration="5" complete="0" expand="true">
+            <depend id="814" type="2" difference="0" hardness="Strong"/>
+            <depend id="815" type="2" difference="0" hardness="Strong"/>
+            <depend id="816" type="2" difference="0" hardness="Strong"/>
+            <depend id="817" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="815" uid="2778c94299f34ecebe56046966331004" name="T2.2.2 : Rédaction du dictionnaire des contraintes" color="#ffcccc" meeting="false" start="2026-04-17" duration="4" complete="0" expand="true">
+            <depend id="814" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="814" uid="8059e98b78284c86af7fda7dcd4101ed" name="T2.2.3: Modélisation JSON" color="#ffcccc" meeting="false" start="2026-04-23" duration="4" complete="0" expand="true">
+            <depend id="819" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="816" uid="1333b09027534396a3ecaa73afc2a814" name="T2.3.1 : Préparation d'exemples" color="#ffcccc" meeting="false" start="2026-04-17" duration="5" complete="0" expand="true">
+            <depend id="818" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="817" uid="b7ffd917743741ab96646eb7c9448b11" name="T2.3.2 : Gestion des cas limite" color="#ffcccc" meeting="false" start="2026-04-17" duration="5" complete="0" expand="true">
+            <depend id="818" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="818" uid="1f84f4bcf8f84b5d99e3ea33a5df191d" name="T2.3.3 : Anonymisation et Sécurité" color="#ffcccc" meeting="false" start="2026-04-24" duration="5" complete="0" expand="true">
+            <depend id="819" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="819" uid="b444212dd42f49338320223100acef71" name="T2.4.1  : Configuration de l'environnement local" color="#ffcccc" meeting="false" start="2026-05-11" duration="5" complete="0" expand="true">
+            <depend id="6" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="6" uid="aa000007" name="T2.4.2 : Itérations de Prompting" color="#ffcccc" meeting="false" start="2026-05-18" duration="10" complete="0" priority="2" expand="true">
+            <depend id="820" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="820" uid="ab9a9c5fb38a40c4af4d1ba2f52c6956" name="T2.4.3 : Gestion de la &quot;Fenêtre de Contexte&quot;" color="#ffcccc" meeting="false" start="2026-06-01" duration="5" complete="0" expand="true">
+            <depend id="8" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="8" uid="aa000008" name="T2.5.1 : Test de montée en charge" color="#ffcccc" meeting="false" start="2026-06-08" duration="7" complete="0" priority="2" expand="true">
+            <depend id="821" type="2" difference="0" hardness="Strong"/>
+            <depend id="822" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="821" uid="88fbf9d35b724dbfba196b5fdcf44638" name="T2.5.2 : Calcul du taux de succès" color="#ffcccc" meeting="false" start="2026-06-17" duration="4" complete="0" expand="true"/>
+        <task id="822" uid="9242aa01aec54f8988e2ee38ce393a2e" name="T2.5.3 : Analyse des erreurs" color="#ffcccc" meeting="false" start="2026-06-17" duration="7" complete="0" expand="true">
+            <depend id="14" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="9" uid="aa000009" name="T3.0.1 : formation Scraping" color="#ff0000" meeting="false" start="2026-04-01" duration="12" complete="0" expand="true">
+            <depend id="10" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="10" uid="aa000010" name="T3.1.1 : Analyse des sources et définition de la stratégie" color="#ff0000" meeting="false" start="2026-04-17" duration="7" complete="0" priority="2" expand="true">
+            <depend id="11" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="11" uid="aa000011" name="T3.1.2 : choix de l'architecture du robot" color="#ff0000" meeting="false" start="2026-04-28" duration="7" complete="0" expand="true">
+            <depend id="823" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="823" uid="b08502625d0f4aeda9b2373443b5e53d" name="T3.1.3 : développement du moteur d'extraction" color="#ff0000" meeting="false" start="2026-05-07" duration="14" complete="0" expand="true">
+            <depend id="824" type="2" difference="0" hardness="Strong"/>
+            <depend id="825" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="824" uid="39e93bdeb305492183b0b8fbca217c73" name="T3.1.4 : Traitement des données extraites" color="#ff0000" meeting="false" start="2026-05-27" duration="7" complete="0" expand="true">
+            <depend id="200" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="825" uid="ab3ed271749a4e34882bd8057001d5e3" name="T3.2.1 : Module de détection de changement de structur" color="#ff0000" meeting="false" start="2026-05-27" duration="7" complete="0" expand="true">
+            <depend id="826" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="826" uid="b59111a1c3fb41e689a1bd320f1bfb30" name="T3.2.2 : Feedback Loop pour l'auto-réparation" color="#ff0000" meeting="false" start="2026-06-05" duration="5" complete="0" expand="true">
+            <depend id="827" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="827" uid="62bdbf8b1d9846369c221b73af700889" name="T3.2.3 : Optimisation des performances" color="#ff0000" meeting="false" start="2026-06-12" duration="10" complete="0" expand="true">
+            <depend id="14" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="14" uid="aa000014" name="T4.1.1 : Veille technique" color="#33ff66" meeting="false" start="2026-09-01" duration="5" complete="0" priority="2" expand="true">
+            <depend id="828" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="828" uid="16bfeb3b68b14932954ff642b9862f9a" name="T4.1.2 : Création du Dataset de test" color="#33ff66" meeting="false" start="2026-09-08" duration="7" complete="0" expand="true">
+            <depend id="829" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="829" uid="48802d6bfbf54b059906a0b005a448fd" name="T4.1.3 : Optimisation du &quot;System Prompt&quot;" color="#33ff66" meeting="false" start="2026-09-17" duration="7" complete="0" expand="true">
+            <depend id="830" type="2" difference="0" hardness="Strong"/>
+            <depend id="833" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="830" uid="cfe70ea57d4a421f8e033e6fb11d599a" name="T4.2.1  : Module de détection d'échec" color="#33ff66" meeting="false" start="2026-09-28" duration="14" complete="0" expand="true">
+            <depend id="831" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="831" uid="b4b00598d1984fa4a49d238722968f57" name="T4.2.2 : Pipeline d'envoi HTML" color="#33ff66" meeting="false" start="2026-10-16" duration="7" complete="0" expand="true">
+            <depend id="832" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="832" uid="6e625de574aa4a818ca498e996968649" name="T4.2.3 : Parseur de réponse IA" color="#33ff66" meeting="false" start="2026-10-27" duration="7" complete="0" expand="true">
+            <depend id="835" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="835" uid="5629caa92e554b1a9b84d71f9bc8ce5e" name="T4.2.4 : Module d'injection dynamique" color="#33ff66" meeting="false" start="2026-11-05" duration="7" complete="0" expand="true">
+            <depend id="700" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="833" uid="60fcdc4a2c024f9fb618e056f9b046ef" name="T4.3.1 : Scripts de nettoyage Regex" color="#33ff66" meeting="false" start="2026-09-28" duration="7" complete="0" expand="true">
+            <depend id="15" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="15" uid="aa000015" name="T4.3.2 : Standardisation des formats" color="#33ff66" meeting="false" start="2026-10-07" duration="9" complete="0" expand="true">
+            <depend id="834" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="834" uid="191e314a4cfd40c3a9092b8d5140ee84" name="T4.3.3  : Dédoublonnage et Intégrité" color="#33ff66" meeting="false" start="2026-10-20" duration="9" complete="0" expand="true">
+            <depend id="700" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="52" uid="bb000052" name="T5.1.2 : Formation Python Data Science (pandas, sklearn)" color="#1e90ff" meeting="false" start="2026-09-01" duration="15" complete="0" expand="true">
+            <depend id="200" type="2" difference="0" hardness="Strong"/>
+            <depend id="500" type="2" difference="0" hardness="Strong"/>
+            <depend id="600" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="51" uid="bb000051" name="T5.1.1 : Formation Microsoft Power BI (PL-300)" color="#1e90ff" meeting="false" start="2026-09-01" duration="15" complete="0" expand="true">
+            <notes><![CDATA[Rana R + Yessine R | Microsoft Learn gratuit — 16-24h | learn.microsoft.com/fr-fr/training/paths/data-analytics-microsoft/]]></notes>
+            <depend id="200" type="2" difference="0" hardness="Strong"/>
+            <depend id="500" type="2" difference="0" hardness="Strong"/>
+            <depend id="600" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="200" uid="bb000200" name="T5.2.1 : Conception structure Dashboard" color="#1e90ff" meeting="false" start="2026-09-22" duration="7" complete="0" expand="true">
+            <depend id="201" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="201" uid="bb000201" name="T5.2.2 : Développement rapports et visualisations" color="#1e90ff" meeting="false" start="2026-10-01" duration="7" complete="0" expand="true">
+            <depend id="202" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="202" uid="bb000202" name="T5.2.3 : Connexion données → Power BI (Power Query)" color="#1e90ff" meeting="false" start="2026-10-12" duration="7" complete="0" expand="true">
+            <depend id="203" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="203" uid="bb000203" name="T5.2.4 : Formules DAX et indicateurs calculés" color="#1e90ff" meeting="false" start="2026-10-21" duration="7" complete="0" expand="true">
+            <depend id="204" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="204" uid="bb000204" name="T5.2.5 : Validation et livraison Dashboard" color="#1e90ff" meeting="false" start="2026-10-30" duration="7" complete="0" expand="true">
+            <depend id="700" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="500" uid="bb000500" name="T5.3.1 : Conception interface monitoring" color="#1e90ff" meeting="false" start="2026-09-22" duration="7" complete="0" expand="true">
+            <notes><![CDATA[Yessine R]]></notes>
+            <depend id="501" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="501" uid="bb000501" name="T5.3.2 : Développement page Streamlit" color="#1e90ff" meeting="false" start="2026-10-01" duration="7" complete="0" expand="true">
+            <notes><![CDATA[Yessine R | Bibliothèque Streamlit Python]]></notes>
+            <depend id="502" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="502" uid="bb000502" name="T5.3.3 : Lecture logs pipeline temps réel" color="#1e90ff" meeting="false" start="2026-10-12" duration="7" complete="0" expand="true">
+            <notes><![CDATA[Yessine R + Rana C]]></notes>
+            <depend id="503" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="503" uid="bb000503" name="T5.3.4 : Affichage alertes et indicateurs visuels" color="#1e90ff" meeting="false" start="2026-10-21" duration="7" complete="0" expand="true">
+            <notes><![CDATA[Yessine R | Plotly]]></notes>
+            <depend id="700" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="600" uid="bb000600" name="T5.4.1 : Script Python principal du pipeline" color="#1e90ff" meeting="false" start="2026-09-22" duration="7" complete="0" expand="true">
+            <depend id="601" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="601" uid="bb000601" name="T5.4.2 : Intégration étapes réception → analyse → MAJ" color="#1e90ff" meeting="false" start="2026-10-01" duration="7" complete="0" expand="true">
+            <notes><![CDATA[Rana R + Yessine C]]></notes>
+            <depend id="602" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="602" uid="bb000602" name="T5.4.3 : Gestion des erreurs et fichiers de logs" color="#1e90ff" meeting="false" start="2026-10-12" duration="7" complete="0" expand="true">
+            <depend id="603" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="603" uid="bb000603" name="T5.4.4 : Automatisation et planification exécutions" color="#1e90ff" meeting="false" start="2026-10-21" duration="7" complete="0" expand="true">
+            <depend id="700" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="700" uid="bb000700" name="T5.5.1 : Simulation données test pipeline bout en bout" color="#1e90ff" meeting="false" start="2026-11-16" duration="7" complete="0" expand="true">
+            <depend id="701" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="701" uid="bb000701" name="T5.5.2 : Vérification affichage Dashboard après pipeline" color="#1e90ff" meeting="false" start="2026-11-25" duration="7" complete="0" expand="true">
+            <depend id="702" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="702" uid="bb000702" name="T5.5.3 : Vérification interface monitoring pendant tests" color="#1e90ff" meeting="false" start="2026-12-04" duration="5" complete="0" expand="true">
+            <depend id="703" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="703" uid="bb000703" name="T5.5.4 : Rédaction rapport de tests finaux" color="#1e90ff" meeting="false" start="2026-12-11" duration="4" complete="0" expand="true">
+            <depend id="800" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="800" uid="bb000800" name="T5.6.1 : Dépôt livrables Data sur le Drive projet" color="#1e90ff" meeting="false" start="2026-12-17" duration="2" complete="0" expand="true">
+            <depend id="801" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="801" uid="bb000801" name="T5.6.2 : Rédaction guide utilisateur pôle Data" color="#1e90ff" meeting="false" start="2027-01-04" duration="7" complete="0" expand="true">
+            <notes><![CDATA[Rana I + Yessine I]]></notes>
+            <depend id="22" type="2" difference="0" hardness="Strong"/>
+        </task>
+        <task id="22" uid="aa000022" name="Finalisation Rapport Audit" color="#ffcc33" meeting="false" start="2027-01-13" duration="14" complete="0" priority="2" expand="true"/>
+    </tasks>
+    <resources>
+        <resource id="0" name="Rana" function="Default:0" contacts="" phone=""/>
+        <resource id="1" name="Yessine" function="Default:0" contacts="" phone=""/>
+        <resource id="2" name="Cisco" function="Default:0" contacts="" phone=""/>
+        <resource id="3" name="Isidore" function="Default:0" contacts="" phone=""/>
+        <resource id="4" name="Jean-Baptiste" function="Default:0" contacts="" phone=""/>
+        <resource id="5" name="Paul" function="Default:0" contacts="" phone=""/>
+        <resource id="6" name="Zhongman" function="Default:0" contacts="" phone=""/>
+        <resource id="7" name="Louison" function="Default:0" contacts="" phone=""/>
+    </resources>
+    <allocations>
+        <allocation task-id="51" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="52" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="200" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="201" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="202" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="203" resource-id="0" function="Default:0" responsible="false" load="50.0"/>
+        <allocation task-id="204" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="502" resource-id="0" function="Default:0" responsible="false" load="50.0"/>
+        <allocation task-id="600" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="601" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="602" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="603" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="700" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="701" resource-id="0" function="Default:0" responsible="false" load="50.0"/>
+        <allocation task-id="702" resource-id="0" function="Default:0" responsible="false" load="50.0"/>
+        <allocation task-id="703" resource-id="0" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="800" resource-id="0" function="Default:0" responsible="false" load="50.0"/>
+        <allocation task-id="801" resource-id="0" function="Default:0" responsible="false" load="50.0"/>
+        <allocation task-id="51" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="52" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="200" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="201" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="202" resource-id="1" function="Default:0" responsible="false" load="50.0"/>
+        <allocation task-id="203" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="204" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="500" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="501" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="502" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="503" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="601" resource-id="1" function="Default:0" responsible="false" load="50.0"/>
+        <allocation task-id="602" resource-id="1" function="Default:0" responsible="false" load="50.0"/>
+        <allocation task-id="700" resource-id="1" function="Default:0" responsible="false" load="50.0"/>
+        <allocation task-id="701" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="702" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="703" resource-id="1" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="800" resource-id="1" function="Default:0" responsible="false" load="50.0"/>
+        <allocation task-id="801" resource-id="1" function="Default:0" responsible="false" load="50.0"/>
+        <allocation task-id="9" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="10" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="11" resource-id="2" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="9" resource-id="3" function="Default:0" responsible="false" load="100.0"/>
+        <allocation task-id="10" resource-id="3" function="Default:0" responsible="false" load="100.0"/>
+        <allocation task-id="11" resource-id="3" function="Default:0" responsible="false" load="100.0"/>
+        <allocation task-id="4" resource-id="4" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="5" resource-id="5" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="6" resource-id="6" function="Default:0" responsible="true" load="100.0"/>
+        <allocation task-id="8" resource-id="6" function="Default:0" responsible="true" load="100.0"/>
+    </allocations>
+    <vacations/>
+    <previous/>
+    <roles roleset-name="Default"/>
+</project>
