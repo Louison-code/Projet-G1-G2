@@ -1,5 +1,7 @@
 # Règles et Limitations Légales du Projet G1-G2
 
+> **Sources officielles** : voir section [Références légales](#références-légales) en bas du document.
+
 ## Conformité RGPD (Règlement Général sur la Protection des Données)
 
 - **Données personnelles** : ne collecter que les données strictement nécessaires (raison sociale, SIRET, adresse — pas de données personnelles des salariés)
@@ -14,6 +16,9 @@
 - ✅ Les données du répertoire SIRENE sont publiques (INSEE)
 - ✅ Respecter un délai entre les requêtes pour ne pas saturer le service (0.5s minimum — déjà configuré)
 - ❌ Ne pas revendre les données brutes sans transformation significative
+- [Guide de l'API Entreprises](https://entreprise.data.gouv.fr/api_doc)
+- [Répertoire SIRENE — INSEE](https://www.sirene.fr/)
+- [Licence Ouverte / Open Licence (Etalab)](https://www.etalab.gouv.fr/licence-ouverte-open-licence/)
 
 ## Scraping du site Kompass.com
 
@@ -22,6 +27,7 @@
 - ⚠️ Ne pas contourner de mesures techniques de protection (login, captcha, blocage)
 - ⚠️ Limiter la fréquence des requêtes pour ne pas impacter le service
 - ⚠️ Les données collectées doivent être utilisées à des fins non commerciales ou avec droit de réutilisation
+- [robots.txt de Kompass](https://www.kompass.com/robots.txt)
 
 ## Cadre légal français
 
@@ -37,3 +43,20 @@
 3. Ne pas stocker les bases de données dans des dossiers publics (GitHub) — le `.gitignore` les exclut déjà
 4. Documenter la source des données (transparence)
 5. Prévoir une procédure de suppression des données sur demande
+
+---
+
+## Références légales
+
+| Texte | Lien officiel |
+|---|---|
+| RGPD — Règlement (UE) 2016/679 | https://eur-lex.europa.eu/eli/reg/2016/679/oj |
+| Loi informatique et libertés (art. 1-5 RGPD) | https://www.cnil.fr/fr/reglement-europeen-protection-donnees |
+| Loi pour une République numérique (2016) | https://www.legifrance.gouv.fr/loda/id/JORFTEXT000033202746/ |
+| Code des relations entre le public et l'administration | https://www.legifrance.gouv.fr/codes/id/LEGITEXT000031366350/ |
+| Code pénal — art. 323-1 (accès frauduleux) | https://www.legifrance.gouv.fr/codes/article_lc/LEGIARTI000024042648/ |
+| Loi sur la confiance dans l'économie numérique (LCEN) | https://www.legifrance.gouv.fr/loda/id/JORFTEXT000000801164/ |
+| CNIL — Guide du scraper | https://www.cnil.fr/fr/la-cnil-publie-des-recommandations-sur-le-web-scraping |
+| Données SIRENE — INSEE | https://www.sirene.fr/ |
+| Licence Ouverte Etalab | https://www.etalab.gouv.fr/licence-ouverte-open-licence/ |
+| API Recherche d'Entreprises | https://recherche-entreprises.api.gouv.fr/ |
