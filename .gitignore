@@ -1,6 +1,8 @@
 .DS_Store
 *.db
+!data/base_reindustrialisation.db
 *.db-wal
 *.db-shm
 __pycache__/
-03_IA/RESULTATS_MISTRAL_1100/Data/
+
+data/*.bak

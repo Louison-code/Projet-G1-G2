@@ -1,42 +1,68 @@
 # Projet G1-G2 — Collecte de données pour la Réindustrialisation
 
-Pipeline complet de collecte, traitement et visualisation de données d'entreprises françaises liées à la réindustrialisation.
+Pipeline complet de collecte, traitement et visualisation de données d'entreprises françaises.
 
 ## Structure du projet
 
 ```
-00_GESTION_DE_PROJET/       — Cadrage, planning, suivi d'équipe, risques, présentations
-01_CONFORMITE_JURIDIQUE/    — Documentation juridique et liste blanche
-02_ENVIRONNEMENT_ET_LOGICIELS/ — Guides d'installation, configuration, liens
-03_IA/                      — Documentation IA, datasets, tests de performance
-04_SCRAPER/                 — Moteurs d'extraction (API Gouv + scraping Kompass)
-05_VISUALISATION_POWERBI_ET_PILOTAGE/ — Dashboards, rapports, interface
-06_LIVRABLES_FINAUX/        — Rapports finaux, supports, manuels
+├── backend/                 # API REST (FastAPI)
+│   ├── main.py              # Point d'entrée
+│   ├── config.py            # Configuration
+│   ├── database.py          # Connexion SQLite
+│   ├── models/              # Modèles Pydantic
+│   ├── routers/             # Endpoints API
+│   └── services/            # Logique métier
+│
+├── frontend/                # Interface utilisateur (Streamlit)
+│   ├── app.py               # Point d'entrée
+│   └── pages/               # Onglets
+│
+├── scrapers/                # Moteurs d'extraction
+│   ├── base.py              # Classe de base (ABC)
+│   ├── kompass.py           # Scraping Kompass
+│   └── api_gouv.py          # Scraping API Gouv
+│
+├── data/                    # Stockage
+│   ├── base_reindustrialisation.db
+│   └── exports/
+│
+├── config/                  # Configuration
+│   ├── requirements.txt
+│   └── .env.example
+│
+├── docs/                    # Documentation
+│   ├── gestion_projet/      # Ex-00_GESTION_DE_PROJET
+│   ├── conformite_juridique/ # Ex-01_CONFORMITE_JURIDIQUE
+│   ├── environnement/       # Ex-02_ENVIRONNEMENT_ET_LOGICIELS
+│   ├── ia/                  # Ex-03_IA
+│   └── archives/scraping/   # Ex-04_SCRAPING (archives)
+│
+├── start.py                 # Lancement (FastAPI + Streamlit)
+├── start.bat                # Lancement Windows
+├── status.md                # Suivi d'avancement
+├── livrables_drive.md       # Fichiers à mettre sur Google Drive
+└── README.md
 ```
 
-## Scripts de scraping (04_SCRAPER)
-
-| Script | Source | Description |
-|---|---|---|
-| `api_entreprises_gouv.py` | API data.gouv.fr | Collecte via l'API publique par codes NAF industriels |
-| `kompass_max_speed.py` | Kompass | Scraping parallélisé (8 workers Chrome) avec mode EAGER |
-| `traitement_max_speed.py` | — | Pipeline ETL : nettoyage + export Excel (Power BI) et JSON |
-
-## Prérequis
+## Installation
 
 ```bash
-pip install DrissionPage openpyxl pandas requests
+pip install -r config/requirements.txt
 ```
 
 ## Utilisation
 
 ```bash
-# 1. Collecte via API Gouv
-python 04_SCRAPER/developpement_du_moteur_d_extraction_ET_Traitement_des_donnees_extraites/scraping\ rapide/api_entreprises_gouv.py
-
-# 2. Scraping Kompass (nécessite liste_URL_KOMPASS.xlsx)
-python 04_SCRAPER/developpement_du_moteur_d_extraction_ET_Traitement_des_donnees_extraites/scraping\ rapide/kompass_max_speed.py
-
-# 3. Pipeline ETL (après scraping)
-python 04_SCRAPER/developpement_du_moteur_d_extraction_ET_Traitement_des_donnees_extraites/scraping\ rapide/traitement_max_speed.py
+# Lancer l'application (API + interface)
+python start.py
+# Ou double-clic sur start.bat
 ```
+
+## Ressources externes
+
+Les fichiers binaires (PDF, PPT, Excel, images, DB) sont sur Google Drive.
+Voir `livrables_drive.md` pour la liste complète.
+
+## Statut actuel
+
+Voir `status.md` pour le détail.
