@@ -1,6 +1,6 @@
 # Architecture de l'Application — Projet G1-G2
 
-> Application de scraping multi-sources, chatbot RAG, visualisation de données et pilotage Power BI
+> Application de scraping multi-sources, chatbot RAG, visualisation de données et export de graphiques
 > Version : 1.0 — Juin 2026
 
 ---
@@ -40,8 +40,10 @@ Le client a besoin de :
 | Configuration dynamique | Ajouter/supprimer des sites et champs sans modifier le code |
 | Base de données centralisée | SQLite, toutes les sources dans la même base |
 | Chatbot RAG | Questions en français, réponses depuis la BDD |
+| Actions chatbot | Ajouter des champs/sites à scraper et lancer le scraping via le chat |
+| Visuels chatbot | Générer graphiques et cartes interactives en langage naturel |
 | LLM flexible | Local (Ollama) ou API (OpenAI, Mistral...) au choix |
-| Visualisation | Graphiques Streamlit + export Power BI |
+| Visualisation | Graphiques générés par le LLM + export PNG/HTML/PDF/CSV |
 | Traçabilité | Logs d'erreurs, historique des conversations |
 
 ---
@@ -52,61 +54,78 @@ Le client a besoin de :
 
 ```mermaid
 graph TB
-    subgraph Client["🧑‍💻 Machine du client (locale)"]
-        Browser["🌐 Navigateur<br>http://localhost:8501"]
+    %% Style Definitions
+    classDef client fill:#f9f,stroke:#333,stroke-width:2px;
+    classDef app fill:#bbf,stroke:#333,stroke-width:2px;
+    classDef scraping fill:#dfd,stroke:#333,stroke-width:2px;
+    classDef storage fill:#ffd,stroke:#333,stroke-width:2px;
+    classDef ai fill:#fdd,stroke:#333,stroke-width:2px;
+    classDef viz fill:#dff,stroke:#333,stroke-width:2px;
+
+    subgraph Client["🧑‍💻 Interface Utilisateur"]
+        Browser["🌐 Navigateur Web<br/>(Streamlit UI)"]
     end
 
-    subgraph App["📦 Application Python"]
-        Streamlit["🖥️ Streamlit<br>Frontend UI"]
-        FastAPI["⚡ FastAPI<br>Backend API REST<br>http://localhost:8000"]
+    subgraph App["📦 Coeur Application (FastAPI)"]
+        FastAPI["⚡ API REST Gateway<br/>(Orchestrateur)"]
     end
 
-    subgraph Scraping["🕷️ Moteur de scraping"]
-        Kompass["kompass.py<br>DrissionPage 8 workers"]
-        ApiGouv["api_gouv.py<br>API REST data.gouv.fr"]
-        LinkedIn["linkedin.py<br>(à créer)"]
-        SitesGeneriques["sites_generiques.py<br>Scraping configurable"]
+    subgraph Scraping["🕷️ Moteur d'Extraction"]
+        direction TB
+        Verif["🔍 Vérificateur délais<br/>(au démarrage + manuel)"]
+        Workers["🛠️ Workers Scraping<br/>(Kompass, API Gouv, etc.)"]
+        Verif --> Workers
     end
 
-    subgraph Storage["🗄️ Stockage"]
-        DB[(SQLite<br>base_reindustrialisation.db)]
-        Excel["📁 Export Excel<br>Livrable_Final_PowerBI.xlsx"]
+    subgraph Storage["🗄️ Stockage & Données"]
+        DB[(SQLite DB<br/>base_reindustrialisation.db)]
+        SitesConfig["⚙️ sites_scraping<br/>(Config & Délais)"]
+        DB --- SitesConfig
     end
 
     subgraph LLM["🤖 Intelligence Artificielle"]
-        Ollama["Ollama<br>LLM local<br>localhost:11434"]
-        OpenAI["OpenAI API<br>LLM cloud"]
-        RAG["Text-to-SQL<br>RAG Engine"]
+        RAG["🧠 RAG Engine<br/>(Text-to-SQL)"]
+        Models["☁️ LLM Models<br/>(Ollama / OpenAI)"]
+        RAG <--> Models
     end
 
     subgraph Viz["📊 Visualisation"]
-        Charts["Graphiques Streamlit<br>Plotly / Matplotlib"]
-        PowerBI["Power BI Desktop<br>ou API REST"]
-        Metabase["Metabase<br>(optionnel)"]
+        Charts["📈 Dashboard<br/>(Streamlit Charts)"]
+        Export["📁 Export graphiques<br/>(PNG/HTML/PDF/CSV)"]
     end
 
-    Browser <--> Streamlit
-    Streamlit <--> FastAPI
-    FastAPI --> Kompass
-    FastAPI --> ApiGouv
-    FastAPI --> LinkedIn
-    FastAPI --> SitesGeneriques
-    Kompass --> DB
-    ApiGouv --> DB
-    LinkedIn --> DB
-    SitesGeneriques --> DB
-    FastAPI --> DB
-    DB --> Excel
-    FastAPI --> RAG
-    RAG --> Ollama
-    RAG --> OpenAI
-    RAG -.-> DB
-    FastAPI --> Charts
-    Charts --> DB
-    FastAPI --> PowerBI
-    PowerBI -.-> DB
-    FastAPI --> Metabase
-    Metabase -.-> DB
+    %% Connections
+    Browser <--> FastAPI
+    
+    %% Flux Scraping
+    FastAPI -->|"Lancement manuel"| Verif
+    Verif -.->|"Consulte"| SitesConfig
+    Workers -->|"Écrit / Update date"| DB
+    
+    %% Flux RAG / Chat / Viz
+    FastAPI -->|"1. Question"| RAG
+    RAG -->|"2. SQL"| DB
+    DB -->|"3. Data"| RAG
+    RAG -->|"4. Réponse"| FastAPI
+    
+    %% Flux Config LLM (direct API → Models)
+    FastAPI -.->|"Config (modèle, endpoint)"| Models
+    
+    %% Flux Action (écriture via chatbot)
+    FastAPI -.->|"5. Action (ajout site/champ)"| RAG
+    RAG -.->|"6. Appel API<br/>(écriture)"| FastAPI
+    FastAPI -.->|"7. Déclenche scraping"| Verif
+    
+    FastAPI -->|"Réponse avec chart_json<br/>(généré par LLM)"| Charts
+    FastAPI --> Export
+
+    %% Assign Classes
+    class Browser client;
+    class FastAPI app;
+    class Verif,Workers scraping;
+    class DB,SitesConfig storage;
+    class RAG,Models ai;
+    class Charts,Export viz;
 ```
 
 ### 2.2 Flux de données
@@ -121,24 +140,39 @@ sequenceDiagram
     participant LLM as LLM
     participant Viz as Visualisation
 
-    Note over U,Viz: 🔄 Scraping
+    Note over U,Viz: 🔄 Scraping manuel
     U->>UI: Clique "Lancer scraping"
     UI->>API: POST /api/scrape/run
     API->>S: Lance scraper (source configurée)
     S->>S: Scraping parallèle (8 workers)
     S->>DB: Écrit les données
+    S->>DB: UPDATE sites_scraping SET date_dernier_scraping=now
     DB-->>API: Confirmation
     API-->>UI: Résultat + stats
     UI-->>U: ✅ Terminé : 127 entreprises ajoutées
 
-    Note over U,Viz: 💬 Chatbot
+    Note over U,Viz: 🚀 Au démarrage de l'application
+    UI->>API: GET /api/scrape/sites-a-rescraper
+    API->>DB: SELECT * FROM sites_scraping WHERE actif=1 AND (date_dernier_scraping IS NULL OR datetime(...) <= now)
+    DB-->>API: Sites en retard
+    API-->>UI: [{nom: "Kompass", heures_retard: 12}, ...]
+    UI-->>U: 🔔 3 sites nécessitent une mise à jour
+    U->>UI: Clique "Mettre à jour"
+    UI->>API: POST /api/scrape/relancer-si-besoin
+    API->>S: Lance scraping des sites en retard
+    S->>DB: Scrape + UPDATE date_dernier_scraping
+    DB-->>API: OK
+    API-->>UI: Résultat
+    UI-->>U: ✅ 3 sites mis à jour
+
+    Note over U,Viz: 💬 Chatbot (lecture directe BDD, PAS via scraper)
     U->>UI: "Combien d'entreprises à Lille ?"
     UI->>API: POST /api/chat
     API->>API: Récupère schéma BDD
     API->>LLM: Question + Schéma
     LLM->>LLM: Génère SQL
     LLM->>API: SELECT COUNT(*) FROM entreprises WHERE ville='Lille'
-    API->>DB: Exécute requête
+    API->>DB: Exécute requête (lecture seule)
     DB->>API: 127
     API->>LLM: Résultat + reformulation
     LLM->>API: "127 entreprises à Lille"
@@ -148,7 +182,7 @@ sequenceDiagram
     Note over U,Viz: 📊 Visualisation
     U->>UI: Ouvre Dashboard
     UI->>API: GET /api/dashboard/stats
-    API->>DB: Agrégations
+    API->>DB: Agrégations (lecture seule)
     DB->>API: Résultats
     API-->>UI: Statistiques formatées
     UI-->>U: Graphiques mis à jour
@@ -160,6 +194,49 @@ sequenceDiagram
     DB-->>API: OK
     API-->>UI: Site ajouté
     UI-->>U: ✅ Nouveau site configuré
+
+    Note over U,Viz: ➕ Action chatbot — Ajouter un champ à scraper
+    U->>UI: "Ajoute le champ 'email' à scraper sur tous les sites"
+    UI->>API: POST /api/chat
+    API->>API: Qualification : action détectée
+    API->>LLM: Question + Schéma + Contexte
+    LLM->>LLM: Génère action structurée
+    LLM->>API: ACTION(type="ADD_CHAMP", nom="email", site_id="*")
+    API->>DB: INSERT INTO champs_scraping (pour chaque site actif)
+    DB-->>API: OK
+    API->>S: Lance rescraping de tous les sites avec le nouveau champ
+    S->>DB: Scrape et écrit les nouvelles données
+    DB-->>API: Confirmation
+    API-->>UI: "Champ 'email' ajouté et scraping relancé sur 12 sites"
+    UI-->>U: ✅ Champ ajouté, scraping terminé
+
+    Note over U,Viz: ➕ Action chatbot — Ajouter une entreprise/site à scraper
+    U->>UI: "Ajoute l'entreprise https://kompass.com/xyz à scraper"
+    UI->>API: POST /api/chat
+    API->>API: Qualification : action détectée
+    API->>LLM: Question + Schéma + Contexte
+    LLM->>LLM: Génère action structurée
+    LLM->>API: ACTION(type="ADD_SITE", url="https://...", nom="Entreprise X", type="kompass")
+    API->>DB: INSERT INTO sites_scraping
+    DB-->>API: OK
+    API->>S: Lance scraping immédiat du nouveau site
+    S->>DB: Scrape et intègre les données
+    DB-->>API: Confirmation
+    API-->>UI: "Site 'Entreprise X' ajouté et scrapé — 15 données extraites"
+    UI-->>U: ✅ Nouveau site scrapé et intégré
+
+    Note over U,Viz: 🗺️ Chatbot — Génération de visuels
+    U->>UI: "Affiche une carte de France avec les entreprises du secteur automobile, taille = CA"
+    UI->>API: POST /api/chat
+    API->>API: Qualification : visualisation détectée
+    API->>LLM: Question + Schéma + Types de graphiques disponibles
+    LLM->>LLM: Génère spécification de graphique
+    LLM->>API: SPEC(chart_type="carte_france", query="SELECT ville, ca, lat, lon FROM entreprises WHERE naf LIKE '29%'", size_by="ca")
+    API->>DB: Exécute requête (lecture seule)
+    DB->>API: Données géolocalisées
+    API->>API: Génère graphique Plotly (carte bulles)
+    API-->>UI: Réponse + JSON du graphique
+    UI-->>U: 🖼️ Carte interactive affichée dans le chat
 ```
 
 ### 2.3 Composants principaux
@@ -170,8 +247,8 @@ sequenceDiagram
 | Backend | **FastAPI** | API REST, orchestration, logique métier |
 | Scraping | **DrissionPage** | Extraction de données depuis le web |
 | Base de données | **SQLite** | Stockage centralisé de toutes les données |
-| Chatbot | **LangChain + Ollama/OpenAI** | RAG, Text-to-SQL |
-| Visualisation | **Streamlit Charts + Power BI** | Graphiques et rapports |
+| Chatbot | **LangChain + Ollama/OpenAI** | RAG, Text-to-SQL, actions écriture (ajout site/champ + scraping) |
+| Visualisation | **Streamlit Charts** | Graphiques et rapports |
 
 ---
 
@@ -188,22 +265,23 @@ app.py
 │   ├── Graphiques : secteurs d'activité, évolution, carte
 │   └── Dernier scraping : date, statut, compteurs
 │
-├── Onglet 2 : 🕷️ Scraping
-│   ├── Boutons : Lancer / Arrêter / Planifier
-│   ├── Progression : barre de progression + logs en direct
-│   ├── Configuration sites : lister, ajouter, modifier, supprimer
-│   └── Configuration champs : lister, ajouter, activer/désactiver
+    ├── Onglet 2 : 🕷️ Scraping
+    │   ├── Notification : "X sites nécessitent une mise à jour" (au démarrage)
+    │   ├── Boutons : Lancer / Arrêter / Vérifier les délais
+    │   ├── Progression : barre de progression + logs en direct
+    │   ├── Configuration sites : lister, ajouter, modifier, supprimer
+    │   └── Configuration champs : lister, ajouter, activer/désactiver
 │
 ├── Onglet 3 : 💬 Chat RAG
 │   ├── Sélecteur LLM : Ollama (local) / OpenAI (API)
 │   ├── Champ de texte : poser une question
 │   └── Historique : conversation avec les réponses
 │
-└── Onglet 4 : ⚙️ Configuration
-    ├── LLM : endpoint, modèle, clé API
-    ├── Base de données : chemin, taille, tables
-    ├── Power BI : connexion, bouton push
-    └── À propos : version, licence
+    └── Onglet 4 : ⚙️ Configuration
+        ├── LLM : endpoint, modèle, clé API
+        ├── Base de données : chemin, taille, tables
+        ├── Export : format par défaut (PNG, HTML, PDF, CSV)
+        └── À propos : version, licence
 ```
 
 ### 3.2 Maquette fonctionnelle
@@ -250,7 +328,7 @@ backend/
 │   ├── champs.py            # CRUD /api/champs
 │   ├── chat.py              # POST /api/chat
 │   ├── config_llm.py        # GET/PUT /api/config/llm
-│   └── powerbi.py           # POST /api/powerbi/push
+│   └── export.py            # POST /api/export
 ├── services/                # Logique métier
 │   ├── scraper_manager.py   # Orchestrateur de scraping
 │   ├── llm_adapter.py       # Adapter Ollama / OpenAI
@@ -269,6 +347,8 @@ backend/
 | `GET` | `/api/scrape/status` | Statut du scraping en cours |
 | `POST` | `/api/scrape/stop` | Arrêter le scraping |
 | `GET` | `/api/scrape/logs` | Historique des derniers scrapings |
+| `GET` | `/api/scrape/sites-a-rescraper` | Lister les sites dont le délai est dépassé |
+| `POST` | `/api/scrape/relancer-si-besoin` | Vérifier et lancer le scraping des sites en retard |
 | | | |
 | **Sites** | | |
 | `GET` | `/api/sites` | Lister tous les sites configurés |
@@ -290,10 +370,9 @@ backend/
 | `PUT` | `/api/config/llm` | Changer le mode LLM |
 | `GET` | `/api/config/llm/models` | Lister les modèles disponibles |
 | | | |
-| **Power BI** | | |
-| `POST` | `/api/powerbi/push` | Pousser les données vers Power BI |
-| `GET` | `/api/powerbi/status` | Statut de la connexion Power BI |
-| | | |
+| **Export** | | |
+| `POST` | `/api/export` | Exporter un graphique au format souhaité (PNG, HTML, PDF, CSV) |
+| | |
 | **Dashboard** | | |
 | `GET` | `/api/dashboard/stats` | Statistiques globales pour le dashboard |
 | `GET` | `/api/dashboard/evolution` | Évolution dans le temps |
@@ -415,7 +494,110 @@ class BaseScraper(ABC):
 | `linkedin.py` | À définir | LinkedIn | 🔧 À créer |
 | `sites_generiques.py` | DrissionPage configurable | Sites web arbitraires | 🔧 À créer |
 
-### 5.4 Scraping dynamique
+### 5.4 Vérification des mises à jour au démarrage
+
+Au lieu d'un planificateur en arrière-plan, le système vérifie l'état des sites **au démarrage de l'application** et **à la demande** via un bouton dans l'interface.
+
+#### Principe
+
+Chaque site dans `sites_scraping` a deux champs clés :
+- **`date_dernier_scraping`** : horodatage de la dernière exécution (mis à jour automatiquement par le scraper)
+- **`delai_relance`** : nombre d'heures avant de rescraper automatiquement ce site (défaut : 72h)
+
+#### Flux au démarrage
+
+```
+1. L'utilisateur ouvre l'application Streamlit
+2. Le frontend appelle GET /api/scrape/sites-a-rescraper
+3. L'API exécute cette requête :
+```
+```sql
+SELECT *, 
+  ROUND(julianday('now') - julianday(date_dernier_scraping), 1) AS jours_ecart
+FROM sites_scraping
+WHERE actif = 1
+  AND (
+    date_dernier_scraping IS NULL
+    OR datetime(date_dernier_scraping, '+' || delai_relance || ' hours') <= datetime('now')
+  )
+ORDER BY jours_ecart DESC
+```
+```
+4. L'API retourne la liste des sites en retard avec leur délai dépassé
+5. Le frontend affiche une notification : "🔔 3 sites nécessitent une mise à jour"
+6. L'utilisateur clique "Mettre à jour" → POST /api/scrape/relancer-si-besoin
+7. Le scraper s'exécute uniquement sur les sites en retard
+```
+
+#### Endpoints associés
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| `GET` | `/api/scrape/sites-a-rescraper` | Lister les sites dont le délai est dépassé (lecture seule) |
+| `POST` | `/api/scrape/relancer-si-besoin` | Vérifier et lancer le scraping des sites en retard |
+
+#### Code côté backend
+
+```python
+# Au démarrage de FastAPI
+@app.on_event("startup")
+async def demarrage():
+    """Vérification initiale au démarrage de l'API."""
+    pass  # La vérification est déclenchée par le frontend, pas automatiquement
+
+# Endpoint de vérification
+@app.get("/api/scrape/sites-a-rescraper")
+def lister_sites_en_retard():
+    query = """
+        SELECT *, ROUND(julianday('now') - julianday(date_dernier_scraping), 1) AS jours_ecart
+        FROM sites_scraping
+        WHERE actif = 1 AND (
+            date_dernier_scraping IS NULL
+            OR datetime(date_dernier_scraping, '+' || delai_relance || ' hours') <= datetime('now')
+        )
+        ORDER BY jours_ecart DESC
+    """
+    sites = db.execute(query).fetchall()
+    return {
+        "sites_en_retard": len(sites),
+        "sites": [dict(s) for s in sites]
+    }
+
+# Endpoint de relance
+@app.post("/api/scrape/relancer-si-besoin")
+def relancer_scraping():
+    sites = lister_sites_en_retard()
+    if not sites["sites"]:
+        return {"message": "Aucun site à mettre à jour"}
+    run_scraping(sources=[s["id"] for s in sites["sites"]])
+    return {
+        "message": f"{len(sites['sites'])} sites relancés",
+        "sites": sites["sites"]
+    }
+```
+
+#### Code côté frontend Streamlit
+
+```python
+# Dans app.py — vérification au démarrage
+if "sites_verifies" not in st.session_state:
+    response = requests.get(f"{API_URL}/scrape/sites-a-rescraper")
+    st.session_state.sites_en_retard = response.json()
+    st.session_state.sites_verifies = True
+
+# Notification
+nb_sites = st.session_state.sites_en_retard["sites_en_retard"]
+if nb_sites > 0:
+    st.warning(f"🔔 **{nb_sites} site(s) nécessitent une mise à jour**")
+    if st.button("🔄 Mettre à jour maintenant"):
+        with st.spinner("Scraping en cours..."):
+            reponse = requests.post(f"{API_URL}/scrape/relancer-si-besoin")
+            st.success(reponse.json()["message"])
+```
+
+Le chatbot interroge la BDD **directement** — le scraper n'est jamais un intermédiaire entre le chatbot et les données.
+
+### 5.5 Scraping dynamique
 
 Le moteur lit la configuration en base de données à chaque exécution :
 
@@ -482,9 +664,11 @@ erDiagram
         int id PK
         string nom UK
         string url_base
-        enum type "kompass|api|linkedin|manuel"
+        enum type "kompass|api|linkedin|site_web|manuel"
         bool actif
         string selecteurs_config
+        datetime date_dernier_scraping "dernière exécution"
+        int delai_relance "heures avant re-scraping auto"
         datetime date_creation
     }
 
@@ -559,31 +743,59 @@ erDiagram
 
 ## 7. Chatbot RAG & LLM
 
-### 7.1 Pipeline Text-to-SQL
+### 7.1 Pipeline RAG
+
+Le chatbot supporte trois modes : **interrogation (lecture)**, **action (écriture)** et **visualisation**.
 
 ```mermaid
 flowchart TB
-    Q["💬 Question utilisateur<br>ex: 'Combien d'entreprises à Lille ?'"]
-    QC["🔍 Qualification<br>Question hors sujet ?"]
-    Schema["📋 Récupération du schéma BDD<br>Tables, colonnes, types, commentaires"]
-    Prompt["📝 Construction du prompt<br>Question + Schéma + Contexte"]
-    LLM["🤖 LLM appelé<br>Ollama (local) ou OpenAI (API)"]
-    SQL["📄 Génération SQL<br>SELECT COUNT(*) FROM entreprises<br>WHERE ville='Lille'"]
-    Execution["⚡ Exécution SQL<br>Sur la BDD (lecture seule)"]
-    Result["📊 Résultat brut<br>127"]
-    Reformulation["🔄 Reformulation<br>Le LLM traduit en français"]
-    Response["💬 Réponse finale<br>'127 entreprises à Lille'"]
+    Q["💬 Question utilisateur<br>ex: 'Affiche une carte des entreprises du secteur automobile'"]
+    QC["🔍 Qualification<br>Question : Lecture, Action ou Visuel ?"]
+
+    %% Branche Lecture (Text-to-SQL)
+    subgraph Lecture["📖 Mode Lecture (Text-to-SQL)"]
+        Schema["📋 Récupération du schéma BDD<br>Tables, colonnes, types"]
+        Prompt["📝 Construction du prompt<br>Question + Schéma + Contexte"]
+        LLM["🤖 LLM appelé<br>Ollama (local) ou OpenAI (API)"]
+        SQL["📄 Génération SQL<br>SELECT ..."]
+        Execution["⚡ Exécution SQL<br>Lecture seule"]
+        Result["📊 Résultat brut"]
+        Reformulation["🔄 Reformulation"]
+        ResponseL["💬 Réponse finale"]
+        Schema --> Prompt --> LLM --> SQL --> Execution --> Result --> Reformulation --> ResponseL
+    end
+
+    %% Branche Action (écriture)
+    subgraph Action["✏️ Mode Action (Écriture)"]
+        SchemaA["📋 Récupération schéma BDD<br>+ Liste sites/champs actuels"]
+        PromptA["📝 Prompt d'action<br>Question + Schéma + Actions possibles"]
+        LLMa["🤖 LLM appelé"]
+        ActionGen["📋 Génération d'action structurée<br>{ type, params }"]
+        Validation["✅ Validation & confirmation<br>(humaine si critique)"]
+        ExecAction["⚡ Exécution via API<br>POST /api/sites ou /api/champs"]
+        TriggerScrape["🕷️ Déclenchement scraping"]
+        ResponseA["💬 Réponse finale<br>'Champ ajouté, scraping relancé'"]
+        SchemaA --> PromptA --> LLMa --> ActionGen --> Validation --> ExecAction --> TriggerScrape --> ResponseA
+    end
+
+    %% Branche Visualisation
+    subgraph Viz["📊 Mode Visualisation"]
+        SchemaV["📋 Récupération schéma BDD<br>+ infos géographiques"]
+        PromptV["📝 Prompt de visualisation<br>Question + Schéma + Types de graphiques disponibles"]
+        LLMv["🤖 LLM appelé"]
+        SpecGen["📐 Génération de spécification<br>{ chart_type, query, mapping }"]
+        SQLv["⚡ Exécution SQL"]
+        DataV["📦 Données récupérées"]
+        ChartGen["🎨 Génération du graphique<br>Plotly (carte, barres, camembert...)"]
+        ResponseV["🖼️ Réponse + Graphique intégré"]
+        SchemaV --> PromptV --> LLMv --> SpecGen --> SQLv --> DataV --> ChartGen --> ResponseV
+    end
 
     Q --> QC
+    QC -->|"Question (ex: combien ?)"| Lecture
+    QC -->|"Action (ex: ajoute, crée)"| Action
+    QC -->|"Visuel (ex: affiche, carte, graphique)"| Viz
     QC -->|Hors sujet| Refus["❌ Je ne peux répondre<br>qu'aux questions sur la BDD"]
-    QC -->|Valide| Schema
-    Schema --> Prompt
-    Prompt --> LLM
-    LLM --> SQL
-    SQL --> Execution
-    Execution --> Result
-    Result --> Reformulation
-    Reformulation --> Response
 ```
 
 ### 7.2 Modes LLM
@@ -632,10 +844,15 @@ class LLMAdapter:
 
 ### 7.4 Filtrage des questions hors-sujet
 
-Le chatbot refuse les questions qui ne concernent pas :
+Le chatbot accepte les questions qui concernent :
 - Les entreprises dans la base (CA, effectifs, localisation, secteur...)
-- Le scraping (sites, champs, fréquence, logs...)
+- Le scraping et sa configuration (sites, champs, fréquence, logs...)
+- L'ajout ou la modification de champs à scraper
+- L'ajout de nouveaux sites ou entreprises à scraper
+- Le lancement de scraping
 - Les données et leur analyse
+
+Et **refuse** les questions qui ne concernent pas ces sujets.
 
 **Mécanisme :**
 1. **System prompt** : instructions au LLM pour qu'il se limite au périmètre
@@ -644,28 +861,403 @@ Le chatbot refuse les questions qui ne concernent pas :
 
 ---
 
+### 7.5 Actions par le chatbot (écriture)
+
+Le chatbot peut désormais **modifier la configuration** et **déclencher des actions** en plus de simplement lire les données. Deux cas sont supportés :
+
+#### 7.5.1 Ajouter un champ à scraper sur tous les sites
+
+L'utilisateur demande : *"Ajoute le champ 'email' à scraper sur tous les sites"*
+
+**Flux :**
+```
+User → Chatbot: "Ajoute le champ téléphone sur tous les sites"
+  → LLM analyse la demande et génère une action structurée
+  → RAG Engine appelle POST /api/champs pour chaque site actif
+  → RAG Engine appelle POST /api/scrape/run pour rescraper avec le nouveau champ
+  → Réponse : "Champ 'téléphone' ajouté sur 12 sites, scraping relancé ✅"
+```
+
+**Action structurée générée par le LLM :**
+```json
+{
+  "type": "ADD_CHAMP",
+  "params": {
+    "nom_champ": "telephone",
+    "selecteur_css": ".phone",
+    "selecteur_xpath": "//span[@class='phone']",
+    "cible": "tous_sites"
+  }
+}
+```
+
+**Traitement par le RAG Engine :**
+```python
+def executer_action(action: dict) -> dict:
+    if action["type"] == "ADD_CHAMP":
+        # 1. Récupère tous les sites actifs
+        sites = db.execute("SELECT id FROM sites_scraping WHERE actif = 1")
+        # 2. Ajoute le champ pour chaque site
+        for site in sites:
+            api.post("/api/champs", json={
+                "site_id": site["id"],
+                "nom_champ": action["params"]["nom_champ"],
+                "selecteur_css": action["params"].get("selecteur_css", ""),
+                "selecteur_xpath": action["params"].get("selecteur_xpath", ""),
+                "actif": True
+            })
+        # 3. Relance le scraping pour intégrer les nouvelles données
+        api.post("/api/scrape/run", json={"sources": None})  # tous les sites
+        return {
+            "message": f"Champ '{action['params']['nom_champ']}' ajouté sur {len(sites)} sites, scraping relancé.",
+            "sites_impactes": len(sites)
+        }
+```
+
+#### 7.5.2 Ajouter une entreprise/site à scraper
+
+L'utilisateur demande : *"Ajoute l'entreprise https://kompass.com/xyz à scraper"*
+
+**Flux :**
+```
+User → Chatbot: "Scrape l'entreprise ACME sur Kompass"
+  → LLM analyse la demande et génère une action structurée
+  → RAG Engine appelle POST /api/sites pour créer le nouveau site
+  → RAG Engine appelle POST /api/scrape/run avec la nouvelle source
+  → Le scraper s'exécute et intègre les données dans la base
+  → Réponse : "Site ACME ajouté et scrapé — 15 données extraites ✅"
+```
+
+**Action structurée générée par le LLM :**
+```json
+{
+  "type": "ADD_SITE",
+  "params": {
+    "nom": "ACME Industries",
+    "url_base": "https://kompass.com/xyz",
+    "type": "kompass",
+    "delai_relance": 72
+  }
+}
+```
+
+**Traitement par le RAG Engine :**
+```python
+def executer_action(action: dict) -> dict:
+    if action["type"] == "ADD_SITE":
+        # 1. Crée le site en BDD via l'API
+        response = api.post("/api/sites", json={
+            "nom": action["params"]["nom"],
+            "url_base": action["params"]["url_base"],
+            "type": action["params"]["type"],
+            "actif": True,
+            "delai_relance": action["params"].get("delai_relance", 72)
+        })
+        site_id = response["id"]
+        # 2. Lance immédiatement le scraping de ce nouveau site
+        api.post("/api/scrape/run", json={"sources": [site_id]})
+        return {
+            "message": f"Site '{action['params']['nom']}' ajouté et scraping lancé.",
+            "site_id": site_id
+        }
+```
+
+#### 7.5.3 Sécurité et validation des actions
+
+- **Validation LLM** : le prompt système interdit la génération d'actions destructrices (DELETE, DROP, UPDATE massif sans filtre)
+- **Confirmation humaine** : pour les actions jugées "critiques" (suppression, modification massive), le chatbot demande une confirmation avant d'exécuter
+- **Traçabilité** : toutes les actions sont enregistrées dans la table `conversations` avec le champ `type_action` et les paramètres
+- **Lecture seule par défaut** : le chatbot commence toujours en mode lecture ; le mode action est activé uniquement si la question le nécessite
+
+#### 7.5.4 Extension du filtrage des questions
+
+Le chatbot accepte désormais les questions concernant :
+- ✅ Les entreprises dans la base (CA, effectifs, localisation, secteur...)
+- ✅ Le scraping (sites, champs, fréquence, logs...)
+- ✅ L'**ajout de champs** à scraper sur les sites existants
+- ✅ L'**ajout de nouveaux sites/entreprises** à scraper
+- ✅ Le **lancement de scraping** pour un site ou un champ spécifique
+- ✅ La **génération de graphiques et cartes** à partir des données
+
+### 7.6 Génération de visuels par le chatbot
+
+Le chatbot peut **générer et afficher des graphiques interactifs** directement dans la conversation, en réponse à une question en langage naturel.
+
+#### 7.6.1 Principe
+
+Plutôt que de coder chaque type de graphique en dur (`if carte_bulles: ... elif barres: ...`), le LLM génère **directement une spécification Plotly complète et valide** qu'il a apprise pendant son entraînement. Le backend se contente d'exécuter la requête SQL, d'injecter les données dans la spec, de valider la structure, et de passer le JSON à Plotly pour rendu.
+
+```
+User → Chatbot: "Affiche une carte de France avec les entreprises du secteur automobile,
+                 la taille des points doit représenter le chiffre d'affaires"
+  → LLM détecte une demande de visualisation
+  → LLM génère la requête SQL + la spécification Plotly complète
+  → RAG Engine exécute la requête SQL (lecture seule)
+  → RAG Engine injecte les données dans la spec Plotly
+  → Validation légère de la spec (structure, pas d'exec)
+  → Retourne le JSON Plotly final au frontend Streamlit
+  → Streamlit affiche le graphique avec plotly.io.from_json()
+```
+
+#### 7.6.2 Types de graphiques disponibles
+
+Le LLM connaît nativement **tous les types Plotly** — pas de limite artificielle. Exemples :
+
+| Type | Commande exemple |
+|------|------------------|
+| **Carte bulles** (`scattermapbox`) | "Carte de France des entreprises par région" |
+| **Carte choroplèthe** (`choropleth`) | "Carte des départements colorée par CA moyen" |
+| **Barres** (`bar`) | "Top 10 des entreprises par CA" |
+| **Camembert** (`pie`) | "Répartition par secteur d'activité" |
+| **Histogramme** (`histogram`) | "Distribution des effectifs" |
+| **Nuage de points** (`scatter`) | "Corrélation CA / effectifs" |
+| **Séries temporelles** (`scatter+line`) | "Évolution du nombre d'entreprises scrapées" |
+| **Boîte à moustaches** (`box`) | "Distribution du CA par secteur" |
+| **Treemap** (`treemap`) | "Hiérarchie des secteurs et sous-secteurs" |
+| **Graphiques 3D** (`scatter3d`, `surface`) | "Visualisation 3D CA / effectifs / région" |
+| **Subplots** (`make_subplots`) | Combinaisons de graphiques |
+
+Le LLM peut **composer plusieurs graphiques** dans une même figure (subplots), ajouter des annotations, des lignes de tendance, etc. — il suit la documentation officielle de Plotly.
+
+#### 7.6.3 Génération en deux étapes
+
+Au lieu d'une seule spec figée, le LLM produit d'abord la **requête SQL**, puis utilise les résultats pour construire la **spécification Plotly finale** :
+
+**Étape 1 — Le LLM génère la requête SQL :**
+```json
+{
+  "type": "VISUALIZATION",
+  "step": "query",
+  "sql": "SELECT raison_sociale, ville, ca, lat, lon FROM entreprises WHERE naf LIKE '29%' AND lat IS NOT NULL ORDER BY ca DESC LIMIT 200"
+}
+```
+
+**Étape 2 — Le RAG exécute la requête et envoie les résultats au LLM :**
+```
+System: Voici les données extraites de la BDD (200 lignes).
+Génère maintenant la spécification Plotly complète au format JSON
+pour produire le graphique demandé par l'utilisateur.
+```
+
+**Étape 3 — Le LLM génère la spécification Plotly complète :**
+```json
+{
+  "type": "VISUALIZATION",
+  "step": "render",
+  "spec": {
+    "data": [{
+      "type": "scattermapbox",
+      "lat": [48.8566, 50.6292, 43.6047],
+      "lon": [2.3522, 3.0573, 1.4442],
+      "marker": {
+        "size": [45, 12, 28],
+        "color": "red",
+        "opacity": 0.7
+      },
+      "mode": "markers+text",
+      "text": ["VALEO", "ARCELLOR", "AIRBUS"],
+      "textposition": "top center",
+      "name": "Entreprises"
+    }],
+    "layout": {
+      "title": {
+        "text": "Entreprises du secteur automobile en France",
+        "font": {"size": 18}
+      },
+      "mapbox": {
+        "style": "open-street-map",
+        "zoom": 5,
+        "center": {"lat": 47.0, "lon": 2.0}
+      },
+      "width": 900,
+      "height": 600,
+      "margin": {"t": 50, "b": 20, "l": 20, "r": 20}
+    }
+  }
+}
+```
+
+#### 7.6.4 Traitement côté backend
+
+```python
+def generer_visualisation(question: str, llm: LLMAdapter) -> dict:
+    """
+    Gère la génération de visuels en deux appels LLM :
+    1. Génération SQL → exécution
+    2. Génération spec Plotly → rendu
+    """
+    import pandas as pd
+    import plotly.io as pio
+    import json
+
+    # --- Étape 1 : Génération de la requête SQL ---
+    prompt_sql = (
+        "Tu es un assistant qui génère des requêtes SQL pour une base "
+        "d'entreprises. Voici la question de l'utilisateur :\n\n"
+        f"{question}\n\n"
+        "Génère UNIQUEMENT la requête SQL au format JSON "
+        '{"type": "VISUALIZATION", "step": "query", "sql": "..."}.'
+    )
+    reponse_sql = llm.ask(prompt_sql)
+    spec_query = json.loads(reponse_sql)
+    sql = spec_query["sql"]
+
+    # --- Exécution SQL ---
+    df = pd.read_sql(sql, db_connection)
+
+    # --- Étape 2 : Génération de la spec Plotly ---
+    prompt_plotly = (
+        f"Question utilisateur : {question}\n\n"
+        f"Voici les données récupérées ({len(df)} lignes) :\n"
+        f"{df.head(50).to_json(orient='records')}\n\n"
+        "Génère la spécification Plotly JSON complète pour "
+        "afficher ces données selon la demande. "
+        "Utilise le format Plotly.js standard (data + layout). "
+        'Retourne {"type": "VISUALIZATION", "step": "render", "spec": {...}}.'
+    )
+    reponse_plotly = llm.ask(prompt_plotly)
+    spec_plotly = json.loads(reponse_plotly)
+    spec = spec_plotly["spec"]
+
+    # --- Validation légère ---
+    assert "data" in spec and "layout" in spec, "Spec Plotly invalide"
+
+    # --- Rendu et retour ---
+    fig = pio.from_json(json.dumps(spec))
+    return {
+        "type": "chart",
+        "chart_json": fig.to_json(),
+        "title": spec.get("layout", {}).get("title", {}).get("text", ""),
+        "row_count": len(df)
+    }
+```
+
+#### 7.6.5 Affichage dans le frontend Streamlit
+
+```python
+# Dans l'interface du chat Streamlit
+import plotly.io as pio
+
+if message.get("type") == "chart":
+    fig = pio.from_json(message["chart_json"])
+    st.plotly_chart(fig, use_container_width=True)
+else:
+    st.markdown(message["content"])
+```
+
+#### 7.6.6 Avantages de l'approche dynamique
+
+| Approche prédéfinie (avant) | Approche dynamique (maintenant) |
+|------------------------------|----------------------------------|
+| Types codés en dur dans un `if/elif` | Aucun code graphique à écrire |
+| Limité à ce qu'on a prévu | **Tous les types Plotly** disponibles |
+| Maintenance : ajouter un type = modifier le code | Maintenance : zéro |
+| Sous-graphiques complexes impossibles | Subplots, annotations, tendances possibles |
+| Spécification intermédiaire propriétaire | Spec au format Plotly standard, réutilisable |
+
+#### 7.6.7 Géolocalisation des entreprises
+
+Pour les cartes, les entreprises doivent avoir des coordonnées GPS (lat, lon). Deux approches :
+
+| Approche | Description | Quand ? |
+|----------|-------------|---------|
+| **Géocodage au scraping** | Pendant le scraping, convertir adresse → coordonnées via API (Nominatim, Google Maps) | À l'insertion |
+| **Géocodage à la volée** | Géocoder les villes au moment de la requête si les coordonnées manquent | Pendant la visualisation |
+
+Approche recommandée : **géocodage au scraping** avec cache en BDD (colonnes `lat`/`lon` dans `entreprises`).
+
+#### 7.6.8 Export des graphiques générés
+
+Chaque graphique généré par le chatbot peut être exporté via une barre d'outils intégrée dans l'interface du chat :
+
+| Format | Méthode | Usage |
+|--------|---------|-------|
+| **PNG** | `plotly.io.write_image` (Kaleido) | Image statique pour rapport, slide, email |
+| **HTML** | `plotly.io.write_html` | Fichier interactif autonome (Plotly.js embarqué) |
+| **PDF** | `plotly.io.write_image` → conversion | Rapport PDF |
+| **CSV** | `pandas.DataFrame.to_csv` | Données brèves du graphique |
+
+Les boutons d'export apparaissent sous chaque réponse contenant un graphique. L'export est détaillé dans la section [8. Visualisation des données](#8-visualisation-des-données).
+
 ## 8. Visualisation des données
 
 ### 8.1 Options disponibles
 
 | Outil | Intégration | Usage |
 |-------|-------------|-------|
-| **Streamlit (Plotly/Matplotlib)** | Directe dans l'app | Graphiques dashboard, exploration rapide |
-| **Power BI Desktop** | Export .xlsx + API REST | Rapports clients avancés |
-| **Metabase** | Optionnel, Docker | BI collaboratif, requêtes SQL visuelles |
+| **Chatbot visuels** | Dans le chat (via RAG + Plotly) | Graphiques à la demande en langage naturel |
+| **Streamlit (Plotly)** | Directe dans l'app | Dashboard pré-construit, KPIs récurrents |
+| **Export** | Boutons sous chaque graphique | PNG (statique), HTML (interactif), PDF (rapport), CSV (données brutes) |
 
-### 8.2 Flux Power BI
+### 8.2 Flux d'export des graphiques
+
+Tout graphique généré par le chatbot ou affiché dans le dashboard peut être exporté :
 
 ```
-Scraping terminé
-      ↓
-Données en BDD SQLite
-      ↓
-Option A : Export .xlsx      Option B : API REST Power BI
-  → Ouvrir dans Power BI       → Push automatique
-  → Rafraîchir manuellement    → Dataset à jour sans intervention
-      ↓
-Dashboards clients à jour
+Graphique affiché dans Streamlit
+       ↓
+Barre d'outils d'export intégrée
+       ↓
+┌──────────┬─────────────┬───────────┬───────────┐
+│   PNG    │    HTML     │    PDF    │    CSV    │
+│ (Kaleido)│ (Plotly.js) │(ReportLab)│  (pandas) │
+└──────────┴─────────────┴───────────┴───────────┘
+       ↓
+Téléchargement par l'utilisateur
+```
+
+| Format | Technologie | Usage |
+|--------|-------------|-------|
+| **PNG** | `plotly.io.write_image` (via Kaleido) | Image statique pour rapport, slide, email |
+| **HTML** | `plotly.io.write_html` | Fichier interactif autonome (Plotly.js embarqué) |
+| **PDF** | `plotly.io.write_image` → conversion | Rapport PDF complet avec graphiques |
+| **CSV** | `pandas.DataFrame.to_csv` | Données brutes derrière le graphique |
+
+### 8.3 Endpoint d'export
+
+```http
+POST /api/export
+Content-Type: application/json
+
+{
+  "chart_json": "{...}",      // JSON Plotly du graphique
+  "format": "png",            // png, html, pdf, csv
+  "titre": "carte_automobile"
+}
+```
+
+Réponse : fichier binaire (PNG, PDF) ou texte (HTML, CSV) avec Content-Type approprié.
+
+### 8.4 Intégration dans le frontend Streamlit
+
+```python
+# Boutons d'export sous chaque graphique dans le chat
+col1, col2, col3, col4 = st.columns(4)
+with col1:
+    if st.button("📷 PNG", key=f"png_{msg_id}"):
+        export_chart(chart_json, "png")
+with col2:
+    if st.button("🌐 HTML", key=f"html_{msg_id}"):
+        export_chart(chart_json, "html")
+with col3:
+    if st.button("📄 PDF", key=f"pdf_{msg_id}"):
+        export_chart(chart_json, "pdf")
+with col4:
+    if st.button("📊 CSV", key=f"csv_{msg_id}"):
+        export_chart(chart_json, "csv")
+
+def export_chart(chart_json: str, fmt: str):
+    """Appelle l'API d'export et déclenche le téléchargement."""
+    response = requests.post(
+        f"{API_URL}/export",
+        json={"chart_json": chart_json, "format": fmt}
+    )
+    st.download_button(
+        label=f"Télécharger .{fmt}",
+        data=response.content,
+        file_name=f"graphique.{fmt}",
+        mime=response.headers["Content-Type"]
+    )
 ```
 
 ---
@@ -711,7 +1303,9 @@ pip install -r requirements.txt
 ollama pull llama3.2
 
 # Étape 4 : Lancer l'application (tous les jours)
-python start.py
+Windows  → double-clic sur start.bat
+Linux/macOS → ./start.sh
+# Ou en ligne de commande : python start.py
 # → Le navigateur s'ouvre sur http://localhost:8501
 ```
 
@@ -814,8 +1408,8 @@ pydantic==2.6.1
 │ Frontend  │ Backend  │ Scraping │  IA / LLM   │ Visualisation │
 │ Streamlit │ FastAPI  │Drission- │ Ollama      │  Streamlit    │
 │ Python    │ Uvicorn  │ Page     │ OpenAI      │  Plotly       │
-│ HTML/CSS  │ Pydantic │Requests  │ LangChain   │  Power BI     │
-│           │ SQLAlch. │ Chrome   │ Text-to-SQL │  Metabase     │
+│ HTML/CSS  │ Pydantic │Requests  │ LangChain   │  Export       │
+│           │ SQLAlch. │ Chrome   │ Text-to-SQL │               │
 └───────────┴──────────┴──────────┴─────────────┴───────────────┘
               │                        │
               └────── SQLite ──────────┘
@@ -826,7 +1420,10 @@ pydantic==2.6.1
 - **PostgreSQL** : remplacer SQLite pour du multi-utilisateur
 - **Docker** : containeriser l'application pour un déploiement serveur
 - **Authentification** : ajouter un login si accès multi-utilisateur
-- **Scraping programmé** : planification automatique (daily/weekly)
+- **Vérification des mises à jour au démarrage** : ✅ implémenté — notification des sites en retard + relance manuelle
+- **Actions chatbot (écriture)** : ✅ implémenté — le chatbot peut ajouter des champs et des sites, puis lancer le scraping
+- **Visuels chatbot** : ✅ implémenté — le chatbot génère des graphiques et cartes interactifs à la demande
+- **Export graphiques** : ✅ implémenté — PNG, HTML, PDF, CSV
 - **Modèles LLM supplémentaires** : ajouter Claude, Gemini, DeepSeek...
 - **Export PDF** : génération de rapports automatiques
 - **WebSocket** : remplacer le polling par du temps réel pour les logs scraping
@@ -834,11 +1431,11 @@ pydantic==2.6.1
 ### 10.4 Sécurité
 
 - Les clés API sont **chiffrées** dans la base de données (`cryptography`)
-- Les requêtes SQL générées par le LLM sont exécutées en **lecture seule**
+- Les requêtes SQL générées par le LLM sont exécutées en **lecture seule** (mode question)
+- Les **actions d'écriture** (ajout site/champ) passent par les endpoints API, pas par du SQL direct
 - Le chatbot **refuse** les questions hors-sujet (filtre + prompt system)
+- Les actions destructrices (DELETE, suppression) nécessitent une **confirmation humaine**
 - L'application tourne **en local** — les données ne quittent pas la machine
 - Pas d'authentification requise (usage mono-utilisateur local)
 
----
 
-> **Document généré le 04/06/2026 — Projet G1-G2**

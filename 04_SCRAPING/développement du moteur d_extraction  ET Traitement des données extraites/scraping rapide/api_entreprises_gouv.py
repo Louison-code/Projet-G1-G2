@@ -178,19 +178,9 @@ def lancer_collecte_massive(conn):
             
         print(f"\n✅ NAF {naf} terminé. {insere_naf} entreprises insérées.")
 
-    print("\n" + "=" * 60)
-    print(f"🎉 COLLECTE TERMINÉE ! Total : {total_insere} entreprises enregistrées.")
-    print(f"📂 Ta base de données t'attend sur ton Bureau : {DB_PATH}")
-    print("=" * 60)
-
 # ─── LE DÉCLENCHEUR ───────────────────────────────────────────────
 
 if __name__ == "__main__":
-    # 1. On initialise la base sur le Bureau
     connexion = init_db(DB_PATH)
-    
-    # 2. On lance la grosse boucle (fini les tests)
     lancer_collecte_massive(connexion)
-    
-    # 3. On ferme proprement
     connexion.close()
