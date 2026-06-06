@@ -1,8 +1,9 @@
 .DS_Store
 *.db
-!data/base_reindustrialisation.db
 *.db-wal
 *.db-shm
 __pycache__/
 
 data/*.bak
+cache_scraper/
+test_api.py

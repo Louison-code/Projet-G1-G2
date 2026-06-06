@@ -1,12 +1,18 @@
-from scrapers.scraper_kompass import ScraperKompass
-from scrapers.scraper_api_gouv import ScraperApiGouv
-from scrapers.scraper_url_directe import ScraperUrlDirecte
 from scrapers.base import BaseScraper, DB_PATH, COLONNES_CLIENT
+
+try:
+    from scrapers.scraper_kompass import ScraperKompass
+except ImportError:
+    ScraperKompass = None
+
+try:
+    from scrapers.scraper_api_gouv import ScraperApiGouv
+except ImportError:
+    ScraperApiGouv = None
 
 __all__ = [
     "ScraperKompass",
     "ScraperApiGouv",
-    "ScraperUrlDirecte",
     "BaseScraper",
     "DB_PATH",
     "COLONNES_CLIENT",

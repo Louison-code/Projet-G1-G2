@@ -66,14 +66,25 @@ class ScraperApiGouv(BaseScraper):
         print(f"\n  Total: {len(resultats)} entreprises issues de l'API Gouv")
         return resultats
 
+    @staticmethod
+    def _formater_naf(code: str) -> str:
+        """Convertit 2811Z -> 28.11Z (format attendu par l'API)"""
+        if "." in code:
+            return code
+        m = re.match(r"^(\d{2})(\d{2})([A-Z])$", code)
+        if m:
+            return f"{m.group(1)}.{m.group(2)}{m.group(3)}"
+        return code
+
     def _scraper_code_naf(self, code_naf: str, max_pages: int) -> list[dict]:
         entreprises = []
+        code_naf_api = self._formater_naf(code_naf)
 
         for page in range(1, max_pages + 1):
             try:
                 url = "https://recherche-entreprises.api.gouv.fr/search"
                 params = {
-                    "activite_principale": code_naf,
+                    "activite_principale": code_naf_api,
                     "page": page,
                     "per_page": RESULTATS_PAR_PAGE,
                 }

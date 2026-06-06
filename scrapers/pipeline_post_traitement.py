@@ -16,7 +16,7 @@ import re, json, csv, os, sys, sqlite3, time
 from datetime import datetime
 from pathlib import Path
 
-BASE_DIR = Path(__file__).parent.resolve()
+BASE_DIR = Path(__file__).resolve().parent.parent
 DB_PATH = BASE_DIR / "data" / "base_reindustrialisation.db"
 EXPORT_DIR = BASE_DIR / "exports"
 EXPORT_DIR.mkdir(exist_ok=True)
