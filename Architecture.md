@@ -79,7 +79,7 @@ graph TB
 
     subgraph Storage["🗄️ Stockage & Données"]
         DB[(SQLite DB<br/>base_reindustrialisation.db)]
-        SitesConfig["⚙️ sites_scraping<br/>(Config & Délais)"]
+        SitesConfig["⚙️ source_scraping<br/>(Config & Délais)"]
         DB --- SitesConfig
     end
 
@@ -146,14 +146,14 @@ sequenceDiagram
     API->>S: Lance scraper (source configurée)
     S->>S: Scraping parallèle (8 workers)
     S->>DB: Écrit les données
-    S->>DB: UPDATE sites_scraping SET date_dernier_scraping=now
+    S->>DB: UPDATE source_scraping SET date_dernier_scraping=now
     DB-->>API: Confirmation
     API-->>UI: Résultat + stats
     UI-->>U: ✅ Terminé : 127 entreprises ajoutées
 
     Note over U,Viz: 🚀 Au démarrage de l'application
     UI->>API: GET /api/scrape/sites-a-rescraper
-    API->>DB: SELECT * FROM sites_scraping WHERE actif=1 AND (date_dernier_scraping IS NULL OR datetime(...) <= now)
+    API->>DB: SELECT * FROM source_scraping WHERE actif=1 AND (date_dernier_scraping IS NULL OR datetime(...) <= now)
     DB-->>API: Sites en retard
     API-->>UI: [{nom: "Kompass", heures_retard: 12}, ...]
     UI-->>U: 🔔 3 sites nécessitent une mise à jour
@@ -190,25 +190,10 @@ sequenceDiagram
     Note over U,Viz: ⚙️ Configuration
     U->>UI: Ajoute un site à scraper
     UI->>API: POST /api/sites
-    API->>DB: INSERT INTO sites_scraping
+    API->>DB: INSERT INTO source_scraping
     DB-->>API: OK
     API-->>UI: Site ajouté
     UI-->>U: ✅ Nouveau site configuré
-
-    Note over U,Viz: ➕ Action chatbot — Ajouter un champ à scraper
-    U->>UI: "Ajoute le champ 'email' à scraper sur tous les sites"
-    UI->>API: POST /api/chat
-    API->>API: Qualification : action détectée
-    API->>LLM: Question + Schéma + Contexte
-    LLM->>LLM: Génère action structurée
-    LLM->>API: ACTION(type="ADD_CHAMP", nom="email", site_id="*")
-    API->>DB: INSERT INTO champs_scraping (pour chaque site actif)
-    DB-->>API: OK
-    API->>S: Lance rescraping de tous les sites avec le nouveau champ
-    S->>DB: Scrape et écrit les nouvelles données
-    DB-->>API: Confirmation
-    API-->>UI: "Champ 'email' ajouté et scraping relancé sur 12 sites"
-    UI-->>U: ✅ Champ ajouté, scraping terminé
 
     Note over U,Viz: ➕ Action chatbot — Ajouter une entreprise/site à scraper
     U->>UI: "Ajoute l'entreprise https://kompass.com/xyz à scraper"
@@ -217,7 +202,7 @@ sequenceDiagram
     API->>LLM: Question + Schéma + Contexte
     LLM->>LLM: Génère action structurée
     LLM->>API: ACTION(type="ADD_SITE", url="https://...", nom="Entreprise X", type="kompass")
-    API->>DB: INSERT INTO sites_scraping
+    API->>DB: INSERT INTO source_scraping
     DB-->>API: OK
     API->>S: Lance scraping immédiat du nouveau site
     S->>DB: Scrape et intègre les données
@@ -411,8 +396,7 @@ Content-Type: application/json
 ```mermaid
 flowchart TB
     subgraph Config["Configuration (BDD)"]
-        Sites["sites_scraping<br>table"]
-        Champs["champs_scraping<br>table"]
+        Sites["source_scraping<br>table"]
     end
 
     subgraph Orchestrateur["Scraper Manager (FastAPI)"]
@@ -432,7 +416,7 @@ flowchart TB
         K["Kompass<br>DrissionPage"]
         A["API Gouv<br>REST"]
         L["LinkedIn<br>(à créer)"]
-        SG["Sites génériques<br>configurable"]
+        SG["Sites génériques"]
     end
 
     subgraph Output["Sortie"]
@@ -500,7 +484,7 @@ Au lieu d'un planificateur en arrière-plan, le système vérifie l'état des si
 
 #### Principe
 
-Chaque site dans `sites_scraping` a deux champs clés :
+Chaque site dans `source_scraping` a deux champs clés :
 - **`date_dernier_scraping`** : horodatage de la dernière exécution (mis à jour automatiquement par le scraper)
 - **`delai_relance`** : nombre d'heures avant de rescraper automatiquement ce site (défaut : 720h — 1 mois)
 
@@ -514,7 +498,7 @@ Chaque site dans `sites_scraping` a deux champs clés :
 ```sql
 SELECT *, 
   ROUND(julianday('now') - julianday(date_dernier_scraping), 1) AS jours_ecart
-FROM sites_scraping
+FROM source_scraping
 WHERE actif = 1
   AND (
     date_dernier_scraping IS NULL
@@ -550,7 +534,7 @@ async def demarrage():
 def lister_sites_en_retard():
     query = """
         SELECT *, ROUND(julianday('now') - julianday(date_dernier_scraping), 1) AS jours_ecart
-        FROM sites_scraping
+        FROM source_scraping
         WHERE actif = 1 AND (
             date_dernier_scraping IS NULL
             OR datetime(date_dernier_scraping, '+' || delai_relance || ' hours') <= datetime('now')
@@ -605,23 +589,15 @@ Le moteur lit la configuration en base de données à chaque exécution :
 # Scraper Manager — lecture dynamique de la config
 def run_scraping(sources: list[str] = None):
     # 1. Récupère les sites actifs depuis la BDD
-    query = "SELECT * FROM sites_scraping WHERE actif = 1"
+    query = "SELECT * FROM source_scraping WHERE actif = 1"
     if sources:
         query += " AND nom IN :sources"
     sites = db.execute(query, {"sources": sources})
 
-    # 2. Pour chaque site, récupère les champs à scraper
+    # 2. Instancie le bon scraper et exécute
     for site in sites:
-        champs = db.execute(
-            "SELECT * FROM champs_scraping WHERE site_id = ? AND actif = 1",
-            [site.id]
-        )
-        # 3. Instancie le bon scraper et exécute
         scraper = get_scraper(site.type)  # kompass, api, linkedin...
-        donnees = scraper.run({
-            "url": site.url_base,
-            "champs": champs
-        })
+        donnees = scraper.run({"url": site.url_base})
         # 4. Sauvegarde en BDD
         batch_insert(db, "entreprises", donnees)
 ```
@@ -637,82 +613,80 @@ def run_scraping(sources: list[str] = None):
 ```mermaid
 erDiagram
     entreprises ||--o{ logs_erreurs : "génère"
-    sites_scraping ||--o{ champs_scraping : "définit"
-    sites_scraping ||--o{ logs_erreurs : "concerne"
-    entreprises ||--o{ indicateurs : "possède"
+    source_scraping ||--o{ logs_erreurs : "concerne"
 
     entreprises {
         int id PK
-        string siret UK
         string siren
-        string raison_sociale
-        string adresse
+        string siret
+        string nom_entreprise
+        string description
         string code_postal
         string ville
-        string region
-        string naf
-        float ca
-        int effectifs
-        string site_web
-        string email
+        string pays
         string telephone
-        string source
+        string fax
+        string email
+        string site_web
+        string tva
+        string capital
+        string forme_juridique
+        string annee_creation
+        string effectif_adresse
+        string effectif_entreprise
+        string activites_principales
+        string activites_secondaires
+        string autres_classifications
+        string code_naf
+        string departement
+        string region
+        string url
+        string roles
+        float ca
+        float resultat_net
+        int annee_financiere
+        string source_financiere
+        datetime date_maj_financiere
         datetime date_scraping
+        string statut_scraping
     }
 
-    sites_scraping {
+    source_scraping {
         int id PK
         string nom UK
         string url_base
-        enum type "kompass|api|linkedin|site_web|manuel"
+        string type
         bool actif
-        string selecteurs_config
-        datetime date_dernier_scraping "dernière exécution"
-        int delai_relance "heures avant re-scraping auto"
+        datetime date_dernier_scraping
+        int delai_relance
         datetime date_creation
-    }
-
-    champs_scraping {
-        int id PK
-        int site_id FK
-        string nom_champ
-        string selecteur_css
-        string selecteur_xpath
-        bool actif
-    }
-
-    indicateurs {
-        int id PK
-        int entreprise_id FK
-        string nom_indicateur
-        string valeur
-        string unite
-        date date_valeur
     }
 
     logs_erreurs {
         int id PK
-        int site_id FK
         int entreprise_id FK
-        datetime date_heure
-        enum niveau "info|warning|error"
-        string message
-        string trace
+        string url
+        string code_erreur
+        string message_erreur
+        string html_snapshot
+        string selecteur_echoue
+        int tentatives
+        bool resolu
+        datetime date_erreur
     }
 
     config_llm {
         int id PK
-        enum mode "local|api"
+        string mode
         string endpoint
         string api_key_chiffree
         string modele
-        string prompt_system
     }
 
     conversations {
         int id PK
         string question
-        string sql_generer
+        string sql_genere
         string reponse
         int resultats_count
         float temps_execution_ms
@@ -724,12 +698,10 @@ erDiagram
 
 | Table | Description | Source |
 |-------|-------------|--------|
-| `entreprises` | Données scrapées de toutes les sources | Scraping |
-| `indicateurs` | Indicateurs financiers et opérationnels | Scraping / Calculs |
-| `sites_scraping` | Configuration des sites à scraper | Manuel / IA |
-| `champs_scraping` | Champs à extraire sur chaque site | Manuel / IA |
+| `entreprises` | Données scrapées de toutes les sources (incl. CA, résultat net) | Scraping |
+| `source_scraping` | Configuration des sites à scraper | Manuel / IA |
 | `logs_erreurs` | Traçabilité des scrapings et erreurs | Automatique |
-| `config_llm` | Configuration du LLM (mode, clé...) | Manuel |
+| `config_llm` | Configuration du LLM (mode, endpoint, modèle) | Manuel |
 | `conversations` | Historique des questions/réponses du chat | Automatique |
 
 ### 6.3 Stockage physique
@@ -896,7 +868,7 @@ User → Chatbot: "Ajoute le champ téléphone sur tous les sites"
 def executer_action(action: dict) -> dict:
     if action["type"] == "ADD_CHAMP":
         # 1. Récupère tous les sites actifs
-        sites = db.execute("SELECT id FROM sites_scraping WHERE actif = 1")
+        sites = db.execute("SELECT id FROM source_scraping WHERE actif = 1")
         # 2. Ajoute le champ pour chaque site
         for site in sites:
             api.post("/api/champs", json={

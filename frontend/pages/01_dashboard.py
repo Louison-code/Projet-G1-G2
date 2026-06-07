@@ -60,8 +60,6 @@ def fetch(endpoint: str) -> dict | list | None:
 
 stats = fetch("/stats")
 geography = fetch("/geography")
-secteurs_data = fetch("/secteurs")
-filiere_data = fetch("/filiere")
 evolution_data = fetch("/evolution")
 dernier = fetch("/dernier-scraping")
 
@@ -70,7 +68,7 @@ if not stats:
     st.stop()
 
 
-col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3, col4 = st.columns(4)
 total = stats['total_entreprises']
 
 def kpi(value, label, unit="", muted=False):
@@ -88,42 +86,19 @@ def kpi(value, label, unit="", muted=False):
 with col1:
     st.markdown(kpi(total, "Entreprises"), unsafe_allow_html=True)
 with col2:
-    ca = stats.get('ca_moyen')
-    if ca:
-        st.markdown(kpi(f"{ca:,.0f}", "CA moyen", " EUR"), unsafe_allow_html=True)
-    else:
-        st.markdown(kpi("–", "CA moyen", muted=True), unsafe_allow_html=True)
-with col3:
-    geo_taux = round(stats['geolocalisees'] / total * 100, 1) if total else 0
-    st.markdown(kpi(f"{geo_taux}", "Geolocalisees", "%"), unsafe_allow_html=True)
-with col4:
     email_taux = round(stats['avec_email'] / total * 100, 1) if total else 0
     st.markdown(kpi(f"{email_taux}", "Avec email", "%"), unsafe_allow_html=True)
-with col5:
-    st.markdown(kpi(stats.get('total_indicateurs', 0), "Indicateurs"), unsafe_allow_html=True)
+with col3:
+    tel_taux = round(stats['avec_telephone'] / total * 100, 1) if total else 0
+    st.markdown(kpi(f"{tel_taux}", "Avec telephone", "%"), unsafe_allow_html=True)
+with col4:
+    st.markdown(kpi(stats.get('avec_ca', 0), "Avec CA"), unsafe_allow_html=True)
 
 
 st.markdown("<hr style='margin:1.5rem 0 1rem 0;opacity:0.2'>", unsafe_allow_html=True)
 col_left, col_right = st.columns(2)
 
 with col_left:
-    st.markdown("<h3 style='font-size:1.1rem;font-weight:600;margin-bottom:0.5rem;'>Repartition par secteur</h3>", unsafe_allow_html=True)
-    st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
-    if secteurs_data and len(secteurs_data) > 0:
-        df_secteurs = pd.DataFrame(secteurs_data)
-        fig = px.pie(
-            df_secteurs, values='n', names='secteur_ia',
-            color_discrete_sequence=px.colors.qualitative.Set2,
-            hole=0.45
-        )
-        fig.update_traces(textposition='inside', textinfo='percent+label')
-        fig.update_layout(margin=dict(t=10, b=10, l=10, r=10), height=350, showlegend=False)
-        st.plotly_chart(fig, use_container_width=True)
-    else:
-        st.info("Aucune donnee de secteur disponible.")
-    st.markdown("</div>", unsafe_allow_html=True)
-
-with col_right:
     st.markdown("<h3 style='font-size:1.1rem;font-weight:600;margin-bottom:0.5rem;'>Repartition par region</h3>", unsafe_allow_html=True)
     st.markdown("<div class='chart-container'>", unsafe_allow_html=True)
     if geography and geography.get('par_region') and len(geography['par_region']) > 0:
@@ -160,17 +135,8 @@ with col_evo:
             line=dict(color='#0d6efd', width=3),
             marker=dict(size=8)
         ))
-        if 'ca_moyen' in df_evo.columns and df_evo['ca_moyen'].notna().any():
-            fig.add_trace(go.Scatter(
-                x=df_evo['annee'], y=df_evo['ca_moyen'],
-                mode='lines+markers', name='CA moyen',
-                line=dict(color='#198754', width=3),
-                marker=dict(size=8),
-                yaxis='y2'
-            ))
         fig.update_layout(
             xaxis_title="Annee", yaxis_title="Nombre d'entreprises",
-            yaxis2=dict(title="CA moyen (EUR)", overlaying='y', side='right'),
             margin=dict(t=10, b=10, l=10, r=10), height=300,
             hovermode='x unified', legend=dict(orientation='h', y=1.1)
         )

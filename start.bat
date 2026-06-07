@@ -1,4 +1,4 @@
 @echo off
-echo Demarrage de l'application G1-G2...
+echo Demarrage de l'outil de scraping 
 python start.py
 pause

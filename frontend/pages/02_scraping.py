@@ -215,8 +215,8 @@ if status:
 
 st.markdown("<hr class='section'>", unsafe_allow_html=True)
 
-# ─── Onglets: Sources / Champs / Logs ───
-tab_sites, tab_champs, tab_logs = st.tabs(["Sources configurees", "Champs par source", "Historique des erreurs"])
+# ─── Onglets: Sources / Logs ───
+tab_sites, tab_logs = st.tabs(["Sources configurees", "Historique des erreurs"])
 
 
 # ════════════════════════════════════════════
@@ -238,7 +238,7 @@ with tab_sites:
                 nom = st.text_input("Nom", placeholder="Ex: API Gouv")
                 url_base = st.text_input("URL de base", placeholder="https://...")
             with c2:
-                type_site = st.selectbox("Type de source", ["api", "kompass", "linkedin", "site_web", "manuel"])
+                type_site = st.selectbox("Type de source", ["api", "site_web", "manuel", "linkedin"])
                 delai = st.number_input("Delai de rafraichissement (heures)", min_value=1, value=720)
             col_b1, col_b2 = st.columns([1, 5])
             with col_b1:
@@ -299,8 +299,8 @@ with tab_sites:
                 e_nom = st.text_input("Nom", value=s.get("nom", ""))
                 e_url = st.text_input("URL de base", value=s.get("url_base", ""))
             with c2:
-                e_type = st.selectbox("Type de source", ["api", "kompass", "linkedin", "site_web", "manuel"],
-                                      index=["api", "kompass", "linkedin", "site_web", "manuel"].index(s.get("type", "api")))
+                e_type = st.selectbox("Type de source", ["api", "site_web", "manuel", "linkedin"],
+                                      index=["api", "site_web", "manuel", "linkedin"].index(s.get("type", "api")))
                 e_delai = st.number_input("Delai (heures)", min_value=1, value=s.get("delai_relance", 720))
             e_actif = st.checkbox("Actif", value=bool(s.get("actif", True)))
             col_b1, col_b2 = st.columns([1, 5])
@@ -323,71 +323,7 @@ with tab_sites:
 
 
 # ════════════════════════════════════════════
-# TAB 2: Champs
-# ════════════════════════════════════════════
-with tab_champs:
-    if not sites:
-        st.info("Aucune source configuree. Ajoutez une source d'abord.")
-    else:
-        site_options = {f"{s['nom']} (id:{s['id']})": s['id'] for s in sites}
-        selected = st.selectbox("Filtrer par source", ["Toutes les sources"] + list(site_options.keys()))
-
-        champs = api_get("/champs")
-        if selected != "Toutes les sources":
-            site_id = site_options[selected]
-            champs = [c for c in champs if c.get("site_id") == site_id] if champs else []
-
-        if champs:
-            for c in champs:
-                cols = st.columns([2.5, 2, 1.5, 0.6, 0.6])
-                with cols[0]:
-                    st.markdown(f"**{c.get('nom_champ', '-')}**")
-                with cols[1]:
-                    st.markdown(f"<span style='font-size:0.85rem;color:#6c757d'>{c.get('selecteur_css', '-') or '-'}</span>", unsafe_allow_html=True)
-                with cols[2]:
-                    st.markdown(f"<span style='font-size:0.85rem;color:#6c757d'>Source #{c.get('site_id', '-')}</span>", unsafe_allow_html=True)
-                with cols[3]:
-                    actif = bool(c.get("actif", True))
-                    if st.button("Activer" if not actif else "Desactiver", key=f"toggle_champ_{c['id']}"):
-                        api_put(f"/champs/{c['id']}", {"actif": not actif})
-                        st.rerun()
-                with cols[4]:
-                    if st.button("X", key=f"del_champ_{c['id']}"):
-                        api_delete(f"/champs/{c['id']}")
-                        st.rerun()
-        else:
-            st.info("Aucun champ pour ce filtre.")
-
-        st.markdown("<br>", unsafe_allow_html=True)
-        with st.expander("Ajouter un champ"):
-            with st.form("form_add_champ"):
-                site_id_new = st.selectbox("Source", list(site_options.keys()), format_func=lambda x: x)
-                nom_champ = st.text_input("Nom du champ", placeholder="Ex: email, telephone, adresse")
-                c1, c2 = st.columns(2)
-                with c1:
-                    selecteur_css = st.text_input("Selecteur CSS", placeholder=".class-name")
-                with c2:
-                    selecteur_xpath = st.text_input("Selecteur XPath", placeholder="//div[@class='...']")
-                if st.form_submit_button("Ajouter le champ", type="primary"):
-                    if nom_champ:
-                        res = api_post("/champs", {
-                            "site_id": site_options[site_id_new],
-                            "nom_champ": nom_champ,
-                            "selecteur_css": selecteur_css,
-                            "selecteur_xpath": selecteur_xpath,
-                            "actif": True
-                        })
-                        if res and "message" not in res:
-                            st.success(f"Champ '{nom_champ}' ajoute")
-                            st.rerun()
-                        else:
-                            st.error(res.get("message", "Erreur lors de l'ajout"))
-                    else:
-                        st.warning("Le nom du champ est obligatoire")
-
-
-# ════════════════════════════════════════════
-# TAB 3: Logs
+# TAB 2: Logs
 # ════════════════════════════════════════════
 with tab_logs:
     logs = api_get("/scrape/logs?limite=100")

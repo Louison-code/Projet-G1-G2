@@ -2,7 +2,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.routers import sites, champs, scraping, dashboard, config_llm, export, chat
+from backend.routers import sites, scraping, dashboard, config_llm, export, chat
 
 app = FastAPI(
     title="API G1-G2 - Réindustrialisation",
@@ -19,7 +19,6 @@ app.add_middleware(
 )
 
 app.include_router(sites.router)
-app.include_router(champs.router)
 app.include_router(scraping.router)
 app.include_router(dashboard.router)
 app.include_router(config_llm.router)
@@ -40,7 +39,6 @@ def racine():
         "endpoints": [
             "/api/health",
             "/api/sites",
-            "/api/champs",
             "/api/scrape/run",
             "/api/scrape/status",
             "/api/dashboard/stats",

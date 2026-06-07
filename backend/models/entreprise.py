@@ -29,11 +29,11 @@ class EntrepriseBase(BaseModel):
     code_naf: Optional[str] = None
     departement: Optional[str] = None
     region: Optional[str] = None
-    chiffre_affaires: Optional[float] = None
-    secteur_ia: Optional[str] = None
-    filiere_ia: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
+    ca: Optional[float] = None
+    resultat_net: Optional[float] = None
+    annee_financiere: Optional[int] = None
+    source_financiere: Optional[str] = None
+    date_maj_financiere: Optional[str] = None
 
 
 class EntrepriseCreate(EntrepriseBase):
@@ -63,12 +63,11 @@ class EntrepriseUpdate(BaseModel):
     code_naf: Optional[str] = None
     departement: Optional[str] = None
     region: Optional[str] = None
-    chiffre_affaires: Optional[float] = None
-    secteur_ia: Optional[str] = None
-    filiere_ia: Optional[str] = None
-    latitude: Optional[float] = None
-    longitude: Optional[float] = None
-
+    ca: Optional[float] = None
+    resultat_net: Optional[float] = None
+    annee_financiere: Optional[int] = None
+    source_financiere: Optional[str] = None
+    date_maj_financiere: Optional[str] = None
 
 class Entreprise(EntrepriseBase):
     id: int

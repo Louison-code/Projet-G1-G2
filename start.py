@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Point d'entrée de l'application — lance le backend API + frontend Streamlit."""
-import subprocess, time, webbrowser, sys
+import subprocess, time, sys
 
 def main():
     print("Démarrage de l'application...")
@@ -19,7 +19,6 @@ def main():
     ])
 
     time.sleep(3)
-    webbrowser.open("http://localhost:8501")
 
     print("Application prête !")
     print("Interface : http://localhost:8501")

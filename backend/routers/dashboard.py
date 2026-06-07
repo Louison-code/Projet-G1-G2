@@ -10,18 +10,14 @@ def stats_globales():
     avec_siren = fetchone("SELECT COUNT(*) AS n FROM entreprises WHERE siren IS NOT NULL AND siren != ''")
     avec_email = fetchone("SELECT COUNT(*) AS n FROM entreprises WHERE email IS NOT NULL AND email != ''")
     avec_tel = fetchone("SELECT COUNT(*) AS n FROM entreprises WHERE telephone IS NOT NULL AND telephone != ''")
-    avec_geo = fetchone("SELECT COUNT(*) AS n FROM entreprises WHERE latitude IS NOT NULL")
-    ca_moyen = fetchone("SELECT ROUND(AVG(chiffre_affaires), 2) AS m FROM entreprises WHERE chiffre_affaires IS NOT NULL")
-    total_indicateurs = fetchone("SELECT COUNT(*) AS n FROM indicateurs")
+    avec_ca = fetchone("SELECT COUNT(*) AS n FROM entreprises WHERE ca IS NOT NULL")
 
     return {
         "total_entreprises": total["n"] if total else 0,
         "avec_siren": avec_siren["n"] if avec_siren else 0,
         "avec_email": avec_email["n"] if avec_email else 0,
         "avec_telephone": avec_tel["n"] if avec_tel else 0,
-        "geolocalisees": avec_geo["n"] if avec_geo else 0,
-        "ca_moyen": ca_moyen["m"] if ca_moyen else 0,
-        "total_indicateurs": total_indicateurs["n"] if total_indicateurs else 0,
+        "avec_ca": avec_ca["n"] if avec_ca else 0,
     }
 
 
@@ -43,31 +39,14 @@ def geographie():
     }
 
 
-@router.get("/secteurs")
-def secteurs():
-    return fetchall(
-        "SELECT secteur_ia, COUNT(*) AS n FROM entreprises "
-        "WHERE secteur_ia IS NOT NULL AND secteur_ia != '' "
-        "GROUP BY secteur_ia ORDER BY n DESC"
-    )
-
-
-@router.get("/filiere")
-def filiere():
-    return fetchall(
-        "SELECT filiere_ia, COUNT(*) AS n FROM entreprises "
-        "WHERE filiere_ia IS NOT NULL AND filiere_ia != '' "
-        "GROUP BY filiere_ia ORDER BY n DESC"
-    )
-
-
 @router.get("/evolution")
 def evolution():
     return fetchall(
-        "SELECT annee, COUNT(DISTINCT entreprise_id) AS entreprises, "
-        "ROUND(AVG(chiffre_affaires), 2) AS ca_moyen, "
-        "ROUND(AVG(effectifs), 0) AS effectifs_moyens "
-        "FROM indicateurs GROUP BY annee ORDER BY annee"
+        "SELECT annee_financiere AS annee, COUNT(*) AS entreprises, "
+        "ROUND(AVG(ca), 0) AS ca_moyen, "
+        "ROUND(AVG(resultat_net), 0) AS resultat_moyen "
+        "FROM entreprises WHERE ca IS NOT NULL "
+        "GROUP BY annee_financiere ORDER BY annee_financiere"
     )
 
 

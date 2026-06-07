@@ -14,8 +14,8 @@ COLONNES_EXPORT = [
     "siren", "siret", "tva", "capital", "forme_juridique",
     "annee_creation", "effectif_adresse", "effectif_entreprise",
     "activites_principales", "activites_secondaires", "autres_classifications",
-    "code_naf", "departement", "region", "chiffre_affaires",
-    "secteur_ia", "filiere_ia", "latitude", "longitude",
+    "code_naf", "departement", "region",
+    "ca", "resultat_net", "annee_financiere", "source_financiere",
 ]
 
 

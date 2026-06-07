@@ -93,7 +93,7 @@ def logs_erreurs(limite: int = 50, resolu: bool = None):
 @router.post("/relancer-si-besoin")
 def relancer_sites_retard():
     maintenant = datetime.now()
-    sites = fetchall("SELECT * FROM sites_scraping WHERE actif = 1")
+    sites = fetchall("SELECT * FROM source_scraping WHERE actif = 1")
     relances = []
     for site in sites:
         dernier = site.get("date_dernier_scraping")
@@ -106,7 +106,7 @@ def relancer_sites_retard():
         delai = timedelta(hours=site.get("delai_relance", 720))
         if maintenant - date_dernier > delai:
             execute(
-                "UPDATE sites_scraping SET date_dernier_scraping = NULL WHERE id = ?",
+                "UPDATE source_scraping SET date_dernier_scraping = NULL WHERE id = ?",
                 (site["id"],)
             )
             relances.append(site["nom"])
@@ -117,7 +117,7 @@ def relancer_sites_retard():
 def sites_a_rescraper():
     maintenant = datetime.now().isoformat()
     return fetchall(
-        "SELECT * FROM sites_scraping WHERE actif = 1 AND "
+        "SELECT * FROM source_scraping WHERE actif = 1 AND "
         "(date_dernier_scraping IS NULL OR "
         "  datetime(date_dernier_scraping, '+' || delai_relance || ' hours') < ?)",
         (maintenant,)

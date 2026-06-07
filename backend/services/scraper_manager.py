@@ -4,7 +4,7 @@ from backend.database import fetchall, fetchone, execute
 SCRAPERS_DISPONIBLES = {
     "api": ("scrapers.scraper_api_gouv", "ScraperApiGouv"),
     "api_gouv": ("scrapers.scraper_api_gouv", "ScraperApiGouv"),
-    "kompass": ("scrapers.scraper_kompass", "ScraperKompass"),
+    # "kompass" — retiré : DataDome CAPTCHA bloque tout accès automatisé
 }
 
 
@@ -25,7 +25,7 @@ def lancer_scraping(source: str = None, config: dict = None, progression: callab
     config = config or {}
     progression = progression or _progression_stub
 
-    sites = fetchall("SELECT * FROM sites_scraping WHERE actif = 1")
+    sites = fetchall("SELECT * FROM source_scraping WHERE actif = 1")
     if source:
         sites = [s for s in sites if s.get("nom") == source or s.get("type") == source]
 
@@ -40,19 +40,8 @@ def lancer_scraping(source: str = None, config: dict = None, progression: callab
 
         progression(idx + 1, max(len(sites), 1), f"Preparation de {nom}")
 
-        champs = fetchall(
-            "SELECT nom_champ, selecteur_css, selecteur_xpath FROM champs_scraping "
-            "WHERE site_id = ? AND actif = 1 ORDER BY nom_champ",
-            (site_id,)
-        )
-        noms_champs = [c["nom_champ"] for c in champs] if champs else []
-
         config_source = dict(config)
         config_source["nom_source"] = nom
-        if noms_champs:
-            config_source["champs"] = noms_champs
-        if champs:
-            config_source["selecteurs"] = {c["nom_champ"]: c for c in champs}
 
         def _progression_source(faits, total, message=""):
             progression(faits, total, f"[{nom}] {message}")
@@ -72,7 +61,7 @@ def lancer_scraping(source: str = None, config: dict = None, progression: callab
             sources_traitees += 1
 
             execute(
-                "UPDATE sites_scraping SET date_dernier_scraping = ? WHERE id = ?",
+                "UPDATE source_scraping SET date_dernier_scraping = ? WHERE id = ?",
                 (datetime.now().strftime("%Y-%m-%d %H:%M:%S"), site_id)
             )
             progression(idx + 1, max(len(sites), 1), f"{nom} : {nb} entreprise(s)")

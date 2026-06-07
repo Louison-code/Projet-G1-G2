@@ -1,6 +1,6 @@
 # Plan de développement — Projet G1-G2
 
-> Dernière mise à jour : 06/06/2026 (ap. dev scraping UI + manager)
+> Dernière mise à jour : 07/06/2026 (nettoyage BDD + suppression indicateurs/champs_scraping)
 > Légende : ✅ Terminé | 🔧 En cours | ☐ Pas commencé
 
 ---
@@ -20,7 +20,7 @@
 - [x] Créer `README.md` — présentation du projet
 
 ### 1.3 Base de données
-- [x] Définir le schéma SQLite (7 tables : entreprises, sites_scraping, champs_scraping, indicateurs, logs_erreurs, config_llm, conversations)
+- [x] Définir le schéma SQLite initial (7 tables) → réduit à 5 tables : entreprises, source_scraping, logs_erreurs, config_llm, conversations
 - [x] Créer la base `data/base_reindustrialisation.db`
 - [x] Insérer les 2 sites sources (kompass, api_gouv)
 - [x] Mettre les colonnes `lat`/`lon` dans `entreprises` pour la géolocalisation
@@ -38,7 +38,7 @@
 - [x] Extraction via regex + complétion API Gouv
 - [x] Upsert par SIREN dans la base commune
 - [x] Code prêt (scraper_kompass.py)
-- [ ] ⚠️ **Bloqué : Chrome incompatible avec DrissionPage** — le navigateur ne répond pas. Les anciennes instances Chrome plantent et empêchent le lancement headless. Solution possible : désinstaller/réinstaller Chrome ou passer par Playwright. À résoudre avant de lancer la collecte Kompass.
+- [x] ⛔ **Abandonné : DataDome CAPTCHA** — Kompass.com est protégé par DataDome, un anti-bot payant. Pas de solution gratuite viable. Les données de contact (email, téléphone) devront venir d'autres sources (LinkedIn, scraping manuel).
 
 ### 2.2 Scraping API Gouv
 - [x] Développer le script d'appel API REST
@@ -49,7 +49,7 @@
 
 ### 2.3 Pipeline post-traitement
 - [x] Nettoyage : suppression doublons SIREN/SIRET, normalisation (ville, email, SIREN)
-- [x] Indicateurs : alimenter la table `indicateurs` (CA, effectifs, année)
+- [x] ~~Indicateurs : alimenter la table `indicateurs` (CA, effectifs, année)~~ → supprimée, fusionnée dans `entreprises.ca`
 - [x] Géolocalisation : adresse → coordonnées GPS (Nominatim OSM)
 - [x] Classification : détection secteur IA + filière par mots-clés et code NAF
 - [x] Export : Excel (PowerBI) + CSV + JSON dans `exports/`
@@ -61,11 +61,12 @@
 - [x] `scrapers/scraper_url_directe.py` — scraper URL directe (via SocieteScraper, 22 champs) → 🔇 retiré (sans intérêt, doublon API Gouv)
 - [ ] `scrapers/linkedin.py` — scraper LinkedIn (si nécessaire)
 - [x] `backend/services/scraper_manager.py` — orchestrateur qui lit la config BDD et lance les scrapers
+- [x] ~~Rendre les scrapers dynamiques~~ → Abandonné : `champs_scraping` supprimée, scrapers 100% hardcodés
 
 ### 2.5 Tests scraping (06/06/2026)
 - [x] **API Gouv** ✅ — 125 entreprises importées en 3 pages (code NAF 28.11Z)
 - [x] **URL directe** ✅ — SAFRAN extrait depuis societe.com (SIREN trouvé)
-- [ ] **Kompass** ⛔ — Chrome incompatible avec DrissionPage, à résoudre ultérieurement
+- [x] **Kompass** ⛔ Abandonné (DataDome CAPTCHA)
 
 ---
 
@@ -114,7 +115,7 @@
   - `GET /api/dashboard/geography` — répartition dépt/région
   - `GET /api/dashboard/secteurs` — secteurs IA
   - `GET /api/dashboard/filiere` — filières
-  - `GET /api/dashboard/evolution` — évolution temporelle (indicateurs)
+  - `GET /api/dashboard/evolution` — évolution temporelle (via `entreprises.ca`)
   - `GET /api/dashboard/dernier-scraping` — dernière collecte
 - [x] `backend/routers/chat.py` :
   - `POST /api/chat` — poser une question (mots-clés pour l'instant)
@@ -165,30 +166,38 @@
 ## Étape 5 — Chatbot RAG
 
 ### 5.1 Moteur RAG
-- [ ] `backend/services/llm_adapter.py` :
+- [x] `backend/services/llm_adapter.py` :
   - Mode local : appeler Ollama (http://localhost:11434)
   - Mode API : appeler OpenAI / Mistral
   - Fonction `ask(prompt)` → réponse texte
-- [ ] `backend/services/rag_engine.py` :
-  - Qualification : question, action ou visuel ?
+- [x] `backend/services/rag_engine.py` :
+  - Lecture dynamique du schéma BDD (sqlite_master)
   - Text-to-SQL : question française → requête SQL
   - Exécution SQL (lecture seule)
-  - Reformulation de la réponse
-  - Génération d'actions structurées (ajout site/champ)
-  - Génération de spécifications Plotly (graphiques)
+  - Reformulation de la réponse en français
 
 ### 5.2 Route Chat
-- [ ] `backend/routers/chat.py` :
-  - `POST /api/chat` — envoyer une question
+- [x] `backend/routers/chat.py` :
+  - `POST /api/chat` — envoyer une question via le RAG engine
   - `GET /api/chat/history` — historique des conversations
+  - `DELETE /api/chat/history` — effacer l'historique
 
 ### 5.3 Page Chat
-- [ ] `frontend/pages/03_chat.py` :
+- [x] `frontend/pages/03_chat.py` :
   - Champ de texte pour poser une question
   - Historique de la conversation
-  - Affichage des réponses textes
-  - Affichage des graphiques Plotly (intégrés dans le chat)
-  - Boutons d'export sous chaque graphique (PNG, HTML, PDF, CSV)
+  - Affichage des réponses textes avec requête SQL dans expander
+  - Bouton effacer l'historique
+
+### 5.4 Page Configuration LLM
+- [x] `frontend/pages/04_config.py` :
+  - Sélecteur de modèle Ollama
+  - Champ endpoint, modèle
+  - Bouton test connexion
+  - Sauvegarde en BDD via l'API
+
+### 5.5 API LLM externe (future)
+- [ ] Ajouter la prise en charge d'API externes (OpenAI, Mistral...) avec sélecteur de mode et gestion de clé API
 
 ---
 
@@ -204,9 +213,21 @@
 - [ ] Types supportés : carte bulles, barres, camembert, histogramme, nuage de points, séries temporelles
 - [ ] Exporter au format PNG (Kaleido), HTML (Plotly.js), PDF
 
-### 6.3 Indicateurs financiers
-- [x] Alimenter la table `indicateurs` (CA, effectifs par année) — via pipeline_post_traitement.py
-- [ ] Afficher l'évolution dans le temps sur le dashboard
+### 6.3 Données financières (CA, résultat net)
+- [ ] **Objectif** : enrichir les entreprises avec leur chiffre d'affaires et résultat net pour les cartographies industrielles
+- [ ] **Champs ajoutés** dans `entreprises` : `ca`, `resultat_net`, `annee_financiere`, `source_financiere`, `date_maj_financiere`
+- [ ] **Table `indicateurs` supprimée** (fusionnée dans `entreprises`)
+
+**Solutions possibles pour scraper les données financières :**
+
+| Solution | Coût | Avantages | Inconvénients |
+|---|---|---|---|
+| **API Entreprise (gouv.fr)** | Gratuit | Données officielles DGFIP, fiable | Habilitation nécessaire (quelques semaines), seulement 3 derniers exercices, pas les micro-entreprises |
+| **Pappers API** | 30€/mois (500 req) | API propre, toutes les données, facile à intégrer | Payant au volume, 100 requêtes gratuites pour tester |
+| **Scraping Pappers.fr** | Gratuit | Site 100% gratuit en consultation, historique complet | Risque de blocage (anti-bot), lent |
+| **Scraping Societe.com** | Gratuit | Données financières disponibles | Anti-bot (proxies nécessaires), fragile |
+
+**Recommandation** : commencer par scraper Pappers.fr (site gratuit) ciblé sur les NAF industriels (~50k entreprises), et basculer sur l'API Entreprise (gouv) une fois l'habilitation obtenue pour fiabiliser les données.
 
 ### 6.4 Scraping fin par entreprise
 - [ ] Permettre de rescraper une entreprise spécifique (et non toute la source)
@@ -214,14 +235,7 @@
 - [ ] Interface UI pour lancer le scraping d'une seule fiche entreprise
 
 ### 6.5 Scraper générique CSS
-- [ ] Développer un scraper universel capable d'extraire des données depuis **n'importe quel site web** en utilisant des sélecteurs CSS/XPath fournis par l'utilisateur
-- **Principe :**
-  - L'utilisateur colle une URL + des sélecteurs CSS dans l'UI (ex: `nom → h1.company-name`, `email → .contact-email a`)
-  - Le scraper télécharge la page (via requests + BeautifulSoup ou DrissionPage si JS requis)
-  - Applique chaque sélecteur pour extraire la valeur
-  - Upserte les données en BDD par SIREN
-- **Cas d'usage :** annuaires B2B (Kompass, Europages, PagesJaunes...), fiches entreprises sur des sites vitrines
-- **Différence avec Kompass :** Kompass nécessite un navigateur (JS lourd) et un scraper dédié avec workers. Le scraper générique CSS cible des pages plus simples (HTML statique) accessibles sans navigateur
+- [x] Annulé — Kompass + LinkedIn suffisent pour couvrir tous les champs. Pas de besoin métier identifié.
 
 ---
 
@@ -266,8 +280,8 @@
 | 2 — Scraping | 27 | 24 | 3 |
 | 3 — Backend API | 18 | 16 | 2 |
 | 4 — Frontend | 12 | 9 | 3 |
-| 5 — Chatbot RAG | 4 | 0 | 4 |
-| 6 — Avancées | 16 | 2 | 14 |
+| 5 — Chatbot RAG | 4 | 4 | 0 |
+| 6 — Avancées | 13 | 1 | 12 |
 | 7 — Tests | 8 | 0 | 8 |
 | 8 — Déploiement | 7 | 0 | 7 |
-| **Total** | **105** | **64** | **41** |
+| **Total** | **101** | **67** | **34** |
