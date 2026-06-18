@@ -62,36 +62,36 @@ graph TB
     classDef ai fill:#fdd,stroke:#333,stroke-width:2px;
     classDef viz fill:#dff,stroke:#333,stroke-width:2px;
 
-    subgraph Client["🧑‍💻 Interface Utilisateur"]
-        Browser["🌐 Navigateur Web<br/>(Streamlit UI)"]
+    subgraph Client[" Interface Utilisateur"]
+        Browser[" Navigateur Web<br/>(Streamlit UI)"]
     end
 
-    subgraph App["📦 Coeur Application (FastAPI)"]
-        FastAPI["⚡ API REST Gateway<br/>(Orchestrateur)"]
+    subgraph App[" Coeur Application (FastAPI)"]
+        FastAPI[" API REST Gateway<br/>(Orchestrateur)"]
     end
 
-    subgraph Scraping["🕷️ Moteur d'Extraction"]
+    subgraph Scraping[" Moteur d'Extraction"]
         direction TB
-        Verif["🔍 Vérificateur délais<br/>(au démarrage + manuel)"]
-        Workers["🛠️ Workers Scraping<br/>(Kompass, API Gouv, etc.)"]
+        Verif[" Vérificateur délais<br/>(au démarrage + manuel)"]
+        Workers[" Workers Scraping<br/>(Kompass, API Gouv, etc.)"]
         Verif --> Workers
     end
 
-    subgraph Storage["🗄️ Stockage & Données"]
+    subgraph Storage[" Stockage & Données"]
         DB[(SQLite DB<br/>base_reindustrialisation.db)]
-        SitesConfig["⚙️ source_scraping<br/>(Config & Délais)"]
+        SitesConfig[" source_scraping<br/>(Config & Délais)"]
         DB --- SitesConfig
     end
 
-    subgraph LLM["🤖 Intelligence Artificielle"]
-        RAG["🧠 RAG Engine<br/>(Text-to-SQL)"]
-        Models["☁️ LLM Models<br/>(Ollama / OpenAI)"]
+    subgraph LLM[" Intelligence Artificielle"]
+        RAG[" RAG Engine<br/>(Text-to-SQL)"]
+        Models[" LLM Models<br/>(Ollama / OpenAI)"]
         RAG <--> Models
     end
 
-    subgraph Viz["📊 Visualisation"]
-        Charts["📈 Dashboard<br/>(Streamlit Charts)"]
-        Export["📁 Export graphiques<br/>(PNG/HTML/PDF/CSV)"]
+    subgraph Viz[" Visualisation"]
+        Charts[" Dashboard<br/>(Streamlit Charts)"]
+        Export[" Export graphiques<br/>(PNG/HTML/PDF/CSV)"]
     end
 
     %% Connections
@@ -140,7 +140,7 @@ sequenceDiagram
     participant LLM as LLM
     participant Viz as Visualisation
 
-    Note over U,Viz: 🔄 Scraping manuel
+    Note over U,Viz:  Scraping manuel
     U->>UI: Clique "Lancer scraping"
     UI->>API: POST /api/scrape/run
     API->>S: Lance scraper (source configurée)
@@ -149,23 +149,23 @@ sequenceDiagram
     S->>DB: UPDATE source_scraping SET date_dernier_scraping=now
     DB-->>API: Confirmation
     API-->>UI: Résultat + stats
-    UI-->>U: ✅ Terminé : 127 entreprises ajoutées
+    UI-->>U:  Terminé : 127 entreprises ajoutées
 
-    Note over U,Viz: 🚀 Au démarrage de l'application
+    Note over U,Viz:  Au démarrage de l'application
     UI->>API: GET /api/scrape/sites-a-rescraper
     API->>DB: SELECT * FROM source_scraping WHERE actif=1 AND (date_dernier_scraping IS NULL OR datetime(...) <= now)
     DB-->>API: Sites en retard
     API-->>UI: [{nom: "Kompass", heures_retard: 12}, ...]
-    UI-->>U: 🔔 3 sites nécessitent une mise à jour
+    UI-->>U:  3 sites nécessitent une mise à jour
     U->>UI: Clique "Mettre à jour"
     UI->>API: POST /api/scrape/relancer-si-besoin
     API->>S: Lance scraping des sites en retard
     S->>DB: Scrape + UPDATE date_dernier_scraping
     DB-->>API: OK
     API-->>UI: Résultat
-    UI-->>U: ✅ 3 sites mis à jour
+    UI-->>U:  3 sites mis à jour
 
-    Note over U,Viz: 💬 Chatbot (lecture directe BDD, PAS via scraper)
+    Note over U,Viz:  Chatbot (lecture directe BDD, PAS via scraper)
     U->>UI: "Combien d'entreprises à Lille ?"
     UI->>API: POST /api/chat
     API->>API: Récupère schéma BDD
@@ -179,7 +179,7 @@ sequenceDiagram
     API-->>UI: Réponse
     UI-->>U: 127 entreprises à Lille
 
-    Note over U,Viz: 📊 Visualisation
+    Note over U,Viz:  Visualisation
     U->>UI: Ouvre Dashboard
     UI->>API: GET /api/dashboard/stats
     API->>DB: Agrégations (lecture seule)
@@ -187,15 +187,15 @@ sequenceDiagram
     API-->>UI: Statistiques formatées
     UI-->>U: Graphiques mis à jour
 
-    Note over U,Viz: ⚙️ Configuration
+    Note over U,Viz:  Configuration
     U->>UI: Ajoute un site à scraper
     UI->>API: POST /api/sites
     API->>DB: INSERT INTO source_scraping
     DB-->>API: OK
     API-->>UI: Site ajouté
-    UI-->>U: ✅ Nouveau site configuré
+    UI-->>U:  Nouveau site configuré
 
-    Note over U,Viz: ➕ Action chatbot — Ajouter une entreprise/site à scraper
+    Note over U,Viz:  Action chatbot — Ajouter une entreprise/site à scraper
     U->>UI: "Ajoute l'entreprise https://kompass.com/xyz à scraper"
     UI->>API: POST /api/chat
     API->>API: Qualification : action détectée
@@ -208,9 +208,9 @@ sequenceDiagram
     S->>DB: Scrape et intègre les données
     DB-->>API: Confirmation
     API-->>UI: "Site 'Entreprise X' ajouté et scrapé — 15 données extraites"
-    UI-->>U: ✅ Nouveau site scrapé et intégré
+    UI-->>U:  Nouveau site scrapé et intégré
 
-    Note over U,Viz: 🗺️ Chatbot — Génération de visuels
+    Note over U,Viz:  Chatbot — Génération de visuels
     U->>UI: "Affiche une carte de France avec les entreprises du secteur automobile, taille = CA"
     UI->>API: POST /api/chat
     API->>API: Qualification : visualisation détectée
@@ -221,7 +221,7 @@ sequenceDiagram
     DB->>API: Données géolocalisées
     API->>API: Génère graphique Plotly (carte bulles)
     API-->>UI: Réponse + JSON du graphique
-    UI-->>U: 🖼️ Carte interactive affichée dans le chat
+    UI-->>U:  Carte interactive affichée dans le chat
 ```
 
 ### 2.3 Composants principaux
@@ -721,45 +721,45 @@ Le chatbot supporte trois modes : **interrogation (lecture)**, **action (écritu
 
 ```mermaid
 flowchart TB
-    Q["💬 Question utilisateur<br>ex: 'Affiche une carte des entreprises du secteur automobile'"]
-    QC["🔍 Qualification<br>Question : Lecture, Action ou Visuel ?"]
+    Q[" Question utilisateur<br>ex: 'Affiche une carte des entreprises du secteur automobile'"]
+    QC[" Qualification<br>Question : Lecture, Action ou Visuel ?"]
 
     %% Branche Lecture (Text-to-SQL)
-    subgraph Lecture["📖 Mode Lecture (Text-to-SQL)"]
-        Schema["📋 Récupération du schéma BDD<br>Tables, colonnes, types"]
-        Prompt["📝 Construction du prompt<br>Question + Schéma + Contexte"]
-        LLM["🤖 LLM appelé<br>Ollama (local) ou OpenAI (API)"]
-        SQL["📄 Génération SQL<br>SELECT ..."]
-        Execution["⚡ Exécution SQL<br>Lecture seule"]
-        Result["📊 Résultat brut"]
-        Reformulation["🔄 Reformulation"]
-        ResponseL["💬 Réponse finale"]
+    subgraph Lecture[" Mode Lecture (Text-to-SQL)"]
+        Schema[" Récupération du schéma BDD<br>Tables, colonnes, types"]
+        Prompt[" Construction du prompt<br>Question + Schéma + Contexte"]
+        LLM[" LLM appelé<br>Ollama (local) ou OpenAI (API)"]
+        SQL[" Génération SQL<br>SELECT ..."]
+        Execution[" Exécution SQL<br>Lecture seule"]
+        Result[" Résultat brut"]
+        Reformulation[" Reformulation"]
+        ResponseL[" Réponse finale"]
         Schema --> Prompt --> LLM --> SQL --> Execution --> Result --> Reformulation --> ResponseL
     end
 
     %% Branche Action (écriture)
-    subgraph Action["✏️ Mode Action (Écriture)"]
-        SchemaA["📋 Récupération schéma BDD<br>+ Liste sites/champs actuels"]
-        PromptA["📝 Prompt d'action<br>Question + Schéma + Actions possibles"]
-        LLMa["🤖 LLM appelé"]
-        ActionGen["📋 Génération d'action structurée<br>{ type, params }"]
-        Validation["✅ Validation & confirmation<br>(humaine si critique)"]
-        ExecAction["⚡ Exécution via API<br>POST /api/sites ou /api/champs"]
-        TriggerScrape["🕷️ Déclenchement scraping"]
-        ResponseA["💬 Réponse finale<br>'Champ ajouté, scraping relancé'"]
+    subgraph Action[" Mode Action (Écriture)"]
+        SchemaA[" Récupération schéma BDD<br>+ Liste sites/champs actuels"]
+        PromptA[" Prompt d'action<br>Question + Schéma + Actions possibles"]
+        LLMa[" LLM appelé"]
+        ActionGen[" Génération d'action structurée<br>{ type, params }"]
+        Validation[" Validation & confirmation<br>(humaine si critique)"]
+        ExecAction[" Exécution via API<br>POST /api/sites ou /api/champs"]
+        TriggerScrape[" Déclenchement scraping"]
+        ResponseA[" Réponse finale<br>'Champ ajouté, scraping relancé'"]
         SchemaA --> PromptA --> LLMa --> ActionGen --> Validation --> ExecAction --> TriggerScrape --> ResponseA
     end
 
     %% Branche Visualisation
-    subgraph Viz["📊 Mode Visualisation"]
-        SchemaV["📋 Récupération schéma BDD<br>+ infos géographiques"]
-        PromptV["📝 Prompt de visualisation<br>Question + Schéma + Types de graphiques disponibles"]
-        LLMv["🤖 LLM appelé"]
-        SpecGen["📐 Génération de spécification<br>{ chart_type, query, mapping }"]
-        SQLv["⚡ Exécution SQL"]
-        DataV["📦 Données récupérées"]
-        ChartGen["🎨 Génération du graphique<br>Plotly (carte, barres, camembert...)"]
-        ResponseV["🖼️ Réponse + Graphique intégré"]
+    subgraph Viz[" Mode Visualisation"]
+        SchemaV[" Récupération schéma BDD<br>+ infos géographiques"]
+        PromptV[" Prompt de visualisation<br>Question + Schéma + Types de graphiques disponibles"]
+        LLMv[" LLM appelé"]
+        SpecGen[" Génération de spécification<br>{ chart_type, query, mapping }"]
+        SQLv[" Exécution SQL"]
+        DataV[" Données récupérées"]
+        ChartGen[" Génération du graphique<br>Plotly (carte, barres, camembert...)"]
+        ResponseV[" Réponse + Graphique intégré"]
         SchemaV --> PromptV --> LLMv --> SpecGen --> SQLv --> DataV --> ChartGen --> ResponseV
     end
 
@@ -767,7 +767,7 @@ flowchart TB
     QC -->|"Question (ex: combien ?)"| Lecture
     QC -->|"Action (ex: ajoute, crée)"| Action
     QC -->|"Visuel (ex: affiche, carte, graphique)"| Viz
-    QC -->|Hors sujet| Refus["❌ Je ne peux répondre<br>qu'aux questions sur la BDD"]
+    QC -->|Hors sujet| Refus[" Je ne peux répondre<br>qu'aux questions sur la BDD"]
 ```
 
 ### 7.2 Modes LLM
@@ -1240,7 +1240,7 @@ def export_chart(chart_json: str, fmt: str):
 
 ```mermaid
 flowchart LR
-    subgraph Machine["💻 Machine du client"]
+    subgraph Machine[" Machine du client"]
         Terminal["Terminal<br>start.bat / start.sh"]
         FastAPI["FastAPI<br>localhost:8000"]
         Streamlit["Streamlit<br>localhost:8501"]
@@ -1249,7 +1249,7 @@ flowchart LR
     end
 
     subgraph Browser[" "]
-        App["🌐 Navigateur<br>http://localhost:8501"]
+        App[" Navigateur<br>http://localhost:8501"]
     end
 
     Terminal --> FastAPI
